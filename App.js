@@ -1,6 +1,5 @@
-import { StatusBar } from 'expo-status-bar'
 import React, { useState } from 'react'
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Switch } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Switch, Button } from 'react-native'
 import { Feather } from '@expo/vector-icons'
 
 export default function App() {
@@ -29,6 +28,17 @@ export default function App() {
       date: '2022-01-10',
       isEnabled: false,
     }    
+  ])
+
+  const [ cities, setCities ] = useState([
+    {
+      time: '11:00',
+      name: 'Лондон'
+    },
+    {
+      time: '12:00',
+      name: 'Пекин'
+    }
   ])
 
   const alarmsTogglers = alarms.map(alarm => {
@@ -98,7 +108,58 @@ export default function App() {
           </View>
         : currentTab == 'Мировое время' ?
           <View>
-
+            <View style={styles.worldTimeTabHeader}>
+              <Text style={styles.worldTimeTabTitle}>
+                10:06:25
+              </Text>
+              <Text style={styles.worldTimeTabSubTitle}>
+                Москва, стандартное время
+              </Text>
+            </View>
+            <View style={styles.alarmsTabBtns}>
+              <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
+                console.log('создаю Будильник')
+              }}>
+                <Feather style={styles.alarmsTabBtn} name="plus" size={24} color="black" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
+                console.log('открываю контекстное меню Будильников')
+              }}>
+                <Feather style={styles.alarmsTabBtn} name="more-vertical" size={24} color="black" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.alarms}>
+              {
+                cities.length >= 1 ?
+                cities.map((city, cityIndex) => {
+                    return (
+                      <View style={styles.alarm} key={cityIndex}>
+                        <View>
+                          <Text style={styles.cityName}>
+                            {
+                              city.name
+                            }
+                          </Text>
+                          <Text style={styles.alarmDate}>
+                            На 5 ч. позже
+                          </Text>
+                        </View>
+                        <Text style={styles.alarmTime}>
+                          {
+                            city.time
+                          }
+                        </Text>
+                      </View>
+                    )
+                  })
+                :
+                  <View style={styles.notFoundAlarms}>
+                    <Text>
+                      Нет установленных будильников
+                    </Text>
+                  </View>
+              }
+            </ScrollView>
           </View>
         : currentTab == 'Секундомер' ?
         <View>
@@ -112,10 +173,87 @@ export default function App() {
           <Text style={styles.stopwatchTitle}>
             00:00:00
           </Text>
+          <View style={styles.stopwatchBtns}>
+            <View  style={styles.stopwatchBtn}>
+              <Button title="Интервал" style={styles.stopwatchIntervalBtn} color={'rgb(200, 200, 200)'} />
+            </View>
+            <View  style={styles.stopwatchBtn}>
+              <Button title="Начать" />
+            </View>
+          </View>
         </View>
         : currentTab == 'Таймер' ?
         <View>
-
+          <View style={styles.alarmsTabBtns}>
+            <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
+                console.log('создаю Таймер')
+              }}>
+              <Feather style={styles.alarmsTabBtn} name="plus" size={24} color="black" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
+              console.log('открываю контекстное меню Таймера')
+            }}>
+              <Feather style={styles.alarmsTabBtn} name="more-vertical" size={24} color="black" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.timerTable}>
+            <ScrollView style={styles.timerTableItem}>
+              <Text style={styles.timerTableItemHeader}>
+                ч.
+              </Text>
+              <Text style={styles.timerTableItemLabel}>
+                03
+              </Text>
+              <Text style={styles.timerTableItemLabel}>
+                04
+              </Text>
+              <Text style={styles.timerTableItemLabel}>
+                05
+              </Text>
+            </ScrollView>
+            <ScrollView style={styles.timerTableItem}>
+              <Text style={styles.timerTableItemHeader}>
+                мин.
+              </Text>
+              <Text style={styles.timerTableItemLabel}>
+                59
+              </Text>
+              <Text style={styles.timerTableItemLabel}>
+                00
+              </Text>
+              <Text style={styles.timerTableItemLabel}>
+                01
+              </Text>
+            </ScrollView>
+            <ScrollView style={styles.timerTableItem}>
+              <Text style={styles.timerTableItemHeader}>
+                сек.
+              </Text>
+              <Text style={styles.timerTableItemLabel}>
+                59
+              </Text>
+              <Text style={styles.timerTableItemLabel}>
+                00
+              </Text>
+              <Text style={styles.timerTableItemLabel}>
+                01
+              </Text>
+            </ScrollView>
+            <ScrollView>
+              
+            </ScrollView>
+            <ScrollView>
+              
+            </ScrollView>
+          </View>
+          <View style={styles.timerBtns}>
+            <View  style={styles.timerBtn}>
+              <Button color={'rgb(200, 200, 200)'} title="00:10:00" />
+            </View>
+            <View  style={styles.timerBtn}>
+              <Button title="Начать" />
+            </View>
+          </View>
         </View>
         :
         <View />
@@ -239,6 +377,57 @@ const styles = StyleSheet.create({
   stopwatchTitle: {
     fontSize: 36,
     textAlign: 'center',
+    marginVertical: 150
+  },
+  stopwatchBtns: {
+    display: 'flex',
+    flexDirection: 'row',
+    marginHorizontal: 'auto',
+    marginVertical: 125
+  },
+  stopwatchBtn: {
+    width: 125,
+    marginHorizontal: 25
+  },
+  stopwatchIntervalBtn: {
+    color: 'rgb(0, 0, 0)'
+  },
+  timerBtn: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
     marginVertical: 50
+  },
+  timerTable: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%'
+  },
+  timerTableItem: {
+    width: '33%',
+    textAlign: 'center'
+  },
+  timerTableItemHeader: {
+
+  },
+  timerTableItemLabel: {
+    marginVertical: 15,
+    fontSize: 36
+  },
+  worldTimeTabSubTitle: {
+    textAlign: 'center'
+  },
+  worldTimeTabTitle: {
+    fontWeight: 500,
+    fontSize: 24,
+    textAlign: 'center'    
+  },
+  worldTimeTabHeader: {
+    marginVertical: 25
+  },
+  cityName: {
+    fontSize: 20,
+    marginLeft: 25
   }
 });
