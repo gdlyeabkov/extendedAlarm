@@ -71,6 +71,27 @@ export function MainActivity({ navigation }) {
     }
   ])
 
+  const [isStart, setIsStart] = useState(false)
+  const millisecondsInSecond = 1000
+  const [title, setTitle] = useState('00:00:00')
+  const timePartsSeparator = ':'
+  const initialSeconds = 0
+  const initialMinutes = 0
+  const countSecondsInMinute = 60
+  const countMinutesInHour = 60
+  const oneCharPrefix = 0
+  const [startBtnBackgroundColor, setStartBtnBackgroundColor] = useState('rgb(0, 0, 255)')
+  const stopColorBtn = 'rgb(255, 0, 0)'
+  const stopBtnLabel = 'Стоп'
+  const [startBtnContent, setStartBtnContent] = useState('Начать')
+  const startColorBtn = 'rgb(0, 0, 255)'
+  const resumeBtnLabel = 'Продолжить'
+  const [isIntervalBtnDisabled, setIsIntervalBtnDisabled] = useState(true)
+  const intervalBtnLabel = 'Интервал'
+  const [intervalBtnContent, setIntervalBtnContent] = useState('Интервал')
+  const [intervals, setIntervals] = useState([]) 
+  const [startTimerTitle, setStartTimerTitle] = useState('10:00')
+
   const alarmsTogglers = alarms.map(alarm => {
     const alarmToggler = {
       isEnabled: false,
@@ -225,14 +246,128 @@ export function MainActivity({ navigation }) {
             </TouchableOpacity>
           </View>
           <Text style={styles.stopwatchTitle}>
-            00:00:00
+            {
+              title
+            }
           </Text>
+          <View style={{
+            display: intervals.length <= 0 ? 'none' : 'block'
+          }}>
+            <View style={styles.intervalsItem}>
+              <Text style={styles.intervalsItemLabel}>
+                Круг
+              </Text>
+              <Text style={styles.intervalsItemLabel}>
+                Время круга
+              </Text>
+              <Text style={styles.intervalsItemLabel}>
+                Общее время
+              </Text>
+            </View>
+            {
+              intervals.map((interval, intervalIndex) => {
+                return (
+                  <View key={intervalIndex} style={styles.intervalsItem}>
+                    <Text style={styles.intervalsItemLabel}>
+                      {
+                        interval.circle
+                      }
+                    </Text>
+                    <Text style={styles.intervalsItemLabel}>
+                      {
+                        interval.circleTime
+                      }
+                    </Text>
+                    <Text style={styles.intervalsItemLabel}>
+                      {
+                        interval.totalTime
+                      }
+                    </Text>
+                  </View>
+                )
+              })
+            }
+          </View>
           <View style={styles.stopwatchBtns}>
             <View  style={styles.stopwatchBtn}>
-              <Button title="Интервал" style={styles.stopwatchIntervalBtn} color={'rgb(200, 200, 200)'} />
+              <Button
+                title="Интервал"
+                style={styles.stopwatchIntervalBtn}
+                color={'rgb(200, 200, 200)'}
+                disabled={isIntervalBtnDisabled}
+                onPress={() => {
+                  const circlesCount = intervals.length + 1
+                  let circleLabelContent = circlesCount.toString() 
+                  const isCirclesTop9 = circlesCount <= 9
+                  if (isCirclesTop9) {
+                    circleLabelContent = oneCharPrefix + circleLabelContent
+                  }
+                  const interval = {
+                    circle: circleLabelContent,
+                    circleTime: '00:00:00',
+                    totalTime: '00:00:00'
+                  }
+                  setIntervals([
+                    interval,
+                    ...intervals
+                  ])
+                }}
+              />
             </View>
             <View  style={styles.stopwatchBtn}>
-              <Button title="Начать" />
+              <Button onPress={() => {
+                const isNotStart = !isStart
+                if (isNotStart) {
+                  setIsIntervalBtnDisabled(false)
+                  setIntervalBtnContent()
+                  setStartBtnBackgroundColor(stopColorBtn)
+                  setStartBtnContent(stopBtnLabel)
+                  setInterval(() => {
+                    const timeParts = title.split(timePartsSeparator)
+                    const rawHours = timeParts[0]
+                    const rawMinutes = timeParts[1]
+                    const rawSeconds = timeParts[2]
+                    const hours = Number(rawHours)
+                    const minutes = Number(rawMinutes)
+                    let seconds = Number(rawSeconds)
+                    seconds = seconds + 1
+                    const isToggleSecond = seconds == countSecondsInMinute
+                    if (isToggleSecond) {
+                      seconds = initialSeconds
+                      minutes = minutes + 1
+                      const isToggleHour = minutes == countMinutesInHour
+                      if (isToggleHour) {
+                        minutes = initialMinutes
+                        hours = hours + 1
+                      }
+                    }
+                    let updatedHoursText = hours.toString()
+                    const countHoursChars = updatedHoursText.length
+                    const isAddHoursPrefix = countHoursChars == 1
+                    if (isAddHoursPrefix) {
+                      updatedHoursText = oneCharPrefix + updatedHoursText
+                    }
+                    let updatedMinutesText = minutes.toString()
+                    const countMinutesChars = updatedMinutesText.length
+                    const isAddMinutesPrefix = countMinutesChars == 1
+                    if (isAddMinutesPrefix) {
+                      updatedMinutesText = oneCharPrefix + updatedMinutesText
+                    }
+                    let updatedSecondsText = seconds.toString()
+                    const countSecondsChars = updatedSecondsText.length
+                    const isAddSecondsPrefix = countSecondsChars === 1
+                    if (isAddSecondsPrefix) {
+                      updatedSecondsText = oneCharPrefix + updatedSecondsText
+                    }
+                    const currentTime = `${updatedHoursText}:${updatedMinutesText}:${updatedSecondsText}`
+                    setTitle(currentTime)
+                  }, millisecondsInSecond)
+                } else {
+                  setStartBtnBackgroundColor(startColorBtn)
+                  setStartBtnContent(resumeBtnLabel)
+                }
+                setIsStart(!isStart)
+              }} color={startBtnBackgroundColor} title={startBtnContent} />
             </View>
           </View>
         </View>
@@ -305,7 +440,49 @@ export function MainActivity({ navigation }) {
               <Button color={'rgb(200, 200, 200)'} title="00:10:00" />
             </View>
             <View  style={styles.timerBtn}>
-              <Button title="Начать" />
+              <Button
+                title="Начать"
+                onPress={() => {
+                  setCurrentTab('TimerStart')
+                }}
+              />
+            </View>
+          </View>
+        </View>
+        : currentTab == 'TimerStart' ?
+        <View>
+          <View style={styles.alarmsTabBtns}>
+            <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
+              console.log('создаю Таймер')
+            }}>
+              <Feather style={styles.alarmsTabBtn} name="plus" size={24} color="black" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
+              console.log('открываю контекстное меню Таймера')
+            }}>
+              <Feather style={styles.alarmsTabBtn} name="more-vertical" size={24} color="black" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.startTimerLabelContainer}>
+            <View style={styles.startTimerLabelBlock}>
+              <Text style={styles.startTimerLabel}>
+                {
+                  startTimerTitle
+                }
+              </Text>
+            </View>
+          </View>
+          <View style={styles.startTimerBtns}>
+            <View  style={styles.startTimerBtn}>
+              <Button
+                title="Отмена"
+                onPress={() => {
+                  setCurrentTab('Таймер')
+                }}  
+              />
+            </View>
+            <View  style={styles.startTimerBtn}>
+              <Button title="Пауза" />
             </View>
           </View>
         </View>
@@ -348,7 +525,7 @@ export function MainActivity({ navigation }) {
           setCurrentTab('Таймер')
         }}>
           <Text style={
-              currentTab == 'Таймер' ? styles.activeFooterTabLabel : ''
+              currentTab === 'Таймер' || currentTab === 'TimerStart'  ? styles.activeFooterTabLabel : ''
             }>
             Таймер
           </Text>
@@ -365,21 +542,432 @@ export function AddAlarmActivity({ navigation }) {
 
   const [alarmSignalName, setAlarmSignalName] = useState('')
 
-  let [lastScrollOffsetByYCoordFromAlarmTimeInputHoursLabel, setLastScrollOffsetByYCoordFromAlarmTimeInputHoursLabel] = useState(0)
-  let [lastScrollOffsetByYCoordFromAlarmTimeInputMinutesLabel, setLastScrollOffsetByYCoordFromAlarmTimeInputMinutesLabel] = useState(0)
-
-  const [alarmActualTimeInputHoursLabels, setAlarmActualTimeInputHoursLabels] = useState([
-    '00',
-    '01',
-    '02'
-  ])
-  const [alarmActualTimeInputMinutesLabels, setAlarmActualTimeInputMinutesLabels] = useState([
-    '00',
-    '01',
-    '02'
-  ])
-
   const [alarmDate, setAlarmDate] = useState('22.11.2000')
+
+  const [repeatedHoursTimeLabels, setRepeatedHoursTimeLabels] = useState([
+    '00',
+    '01',
+    '02',
+    '03',
+    '04',
+    '05',
+    '06',
+    '07',
+    '08',
+    '09',
+    '10',
+    '11',
+    '12',
+    '13',
+    '14',
+    '15',
+    '16',
+    '17',
+    '18',
+    '19',
+    '20',
+    '21',
+    '22',
+    '23',
+    '00',
+    '01',
+    '02',
+    '03',
+    '04',
+    '05',
+    '06',
+    '07',
+    '08',
+    '09',
+    '10',
+    '11',
+    '12',
+    '13',
+    '14',
+    '15',
+    '16',
+    '17',
+    '18',
+    '19',
+    '20',
+    '21',
+    '22',
+    '23',
+    '00',
+    '01',
+    '02',
+    '03',
+    '04',
+    '05',
+    '06',
+    '07',
+    '08',
+    '09',
+    '10',
+    '11',
+    '12',
+    '13',
+    '14',
+    '15',
+    '16',
+    '17',
+    '18',
+    '19',
+    '20',
+    '21',
+    '22',
+    '23',
+    '00',
+    '01',
+    '02',
+    '03',
+    '04',
+    '05',
+    '06',
+    '07',
+    '08',
+    '09',
+    '10',
+    '11',
+    '12',
+    '13',
+    '14',
+    '15',
+    '16',
+    '17',
+    '18',
+    '19',
+    '20',
+    '21',
+    '22',
+    '23',
+    '00',
+    '01',
+    '02',
+    '03',
+    '04',
+    '05',
+    '06',
+    '07',
+    '08',
+    '09',
+    '10',
+    '11',
+    '12',
+    '13',
+    '14',
+    '15',
+    '16',
+    '17',
+    '18',
+    '19',
+    '20',
+    '21',
+    '22',
+    '23'
+  ])
+  const [repeatedMinutesTimeLabels, setRepeatedMinutesTimeLabels] = useState([
+    '00',
+    '01',
+    '02',
+    '03',
+    '04',
+    '05',
+    '06',
+    '07',
+    '08',
+    '09',
+    '10',
+    '11',
+    '12',
+    '13',
+    '14',
+    '15',
+    '16',
+    '17',
+    '18',
+    '19',
+    '20',
+    '21',
+    '22',
+    '23',
+    '24',
+    '25',
+    '26',
+    '27',
+    '28',
+    '29',
+    '30',
+    '31',
+    '32',
+    '33',
+    '34',
+    '35',
+    '36',
+    '37',
+    '38',
+    '39',
+    '40',
+    '41',
+    '42',
+    '43',
+    '44',
+    '45',
+    '46',
+    '47',
+    '48',
+    '49',
+    '50',
+    '51',
+    '52',
+    '53',
+    '54',
+    '55',
+    '56',
+    '57',
+    '58',
+    '59',
+    '00',
+    '01',
+    '02',
+    '03',
+    '04',
+    '05',
+    '06',
+    '07',
+    '08',
+    '09',
+    '10',
+    '11',
+    '12',
+    '13',
+    '14',
+    '15',
+    '16',
+    '17',
+    '18',
+    '19',
+    '20',
+    '21',
+    '22',
+    '23',
+    '24',
+    '25',
+    '26',
+    '27',
+    '28',
+    '29',
+    '30',
+    '31',
+    '32',
+    '33',
+    '34',
+    '35',
+    '36',
+    '37',
+    '38',
+    '39',
+    '40',
+    '41',
+    '42',
+    '43',
+    '44',
+    '45',
+    '46',
+    '47',
+    '48',
+    '49',
+    '50',
+    '51',
+    '52',
+    '53',
+    '54',
+    '55',
+    '56',
+    '57',
+    '58',
+    '59',
+    '00',
+    '01',
+    '02',
+    '03',
+    '04',
+    '05',
+    '06',
+    '07',
+    '08',
+    '09',
+    '10',
+    '11',
+    '12',
+    '13',
+    '14',
+    '15',
+    '16',
+    '17',
+    '18',
+    '19',
+    '20',
+    '21',
+    '22',
+    '23',
+    '24',
+    '25',
+    '26',
+    '27',
+    '28',
+    '29',
+    '30',
+    '31',
+    '32',
+    '33',
+    '34',
+    '35',
+    '36',
+    '37',
+    '38',
+    '39',
+    '40',
+    '41',
+    '42',
+    '43',
+    '44',
+    '45',
+    '46',
+    '47',
+    '48',
+    '49',
+    '50',
+    '51',
+    '52',
+    '53',
+    '54',
+    '55',
+    '56',
+    '57',
+    '58',
+    '59',
+    '00',
+    '01',
+    '02',
+    '03',
+    '04',
+    '05',
+    '06',
+    '07',
+    '08',
+    '09',
+    '10',
+    '11',
+    '12',
+    '13',
+    '14',
+    '15',
+    '16',
+    '17',
+    '18',
+    '19',
+    '20',
+    '21',
+    '22',
+    '23',
+    '24',
+    '25',
+    '26',
+    '27',
+    '28',
+    '29',
+    '30',
+    '31',
+    '32',
+    '33',
+    '34',
+    '35',
+    '36',
+    '37',
+    '38',
+    '39',
+    '40',
+    '41',
+    '42',
+    '43',
+    '44',
+    '45',
+    '46',
+    '47',
+    '48',
+    '49',
+    '50',
+    '51',
+    '52',
+    '53',
+    '54',
+    '55',
+    '56',
+    '57',
+    '58',
+    '59',
+    '00',
+    '01',
+    '02',
+    '03',
+    '04',
+    '05',
+    '06',
+    '07',
+    '08',
+    '09',
+    '10',
+    '11',
+    '12',
+    '13',
+    '14',
+    '15',
+    '16',
+    '17',
+    '18',
+    '19',
+    '20',
+    '21',
+    '22',
+    '23',
+    '24',
+    '25',
+    '26',
+    '27',
+    '28',
+    '29',
+    '30',
+    '31',
+    '32',
+    '33',
+    '34',
+    '35',
+    '36',
+    '37',
+    '38',
+    '39',
+    '40',
+    '41',
+    '42',
+    '43',
+    '44',
+    '45',
+    '46',
+    '47',
+    '48',
+    '49',
+    '50',
+    '51',
+    '52',
+    '53',
+    '54',
+    '55',
+    '56',
+    '57',
+    '58',
+    '59'
+  ])
 
   const getTimeLabel = (rawTime) => {
     const isEditTime = rawTime <= 9
@@ -419,47 +1007,43 @@ export function AddAlarmActivity({ navigation }) {
     <View>
       <View style={styles.addAlarmTimeInput}>
         <View style={styles.addAlarmTimeInputItem}>
-          <ScrollView style={styles.addAlarmTimeInputItemScroll} onScroll={(scroll) => {
-            const scrollEvent = scroll.nativeEvent
-            const scrollOffset = scrollEvent.contentOffset
-            const scrollOffsetByYCoord = scrollOffset.y 
-            let offsetFromScrollTop = 0
-            const isLt = scrollOffsetByYCoord < lastScrollOffsetByYCoordFromAlarmTimeInputHoursLabel
-            const isGt = scrollOffsetByYCoord > lastScrollOffsetByYCoordFromAlarmTimeInputHoursLabel
-            if (isLt) {
-              offsetFromScrollTop = lastScrollOffsetByYCoordFromAlarmTimeInputHoursLabel - scrollOffsetByYCoord
-            } else if (isGt) {
-              offsetFromScrollTop = scrollOffsetByYCoord - lastScrollOffsetByYCoordFromAlarmTimeInputHoursLabel 
-            }
-            setLastScrollOffsetByYCoordFromAlarmTimeInputHoursLabel(scrollOffsetByYCoord)
-            const debugMsg = offsetFromScrollTop
-            console.log(debugMsg)
-            const updatedAlarmActualTimeInputHoursLabels = []
-            const timeLabelRatio = isLt ? -1 : 1
-            const rawFirstHourLabel = alarmActualTimeInputHoursLabels[0]
-            const rawSecondHourLabel = alarmActualTimeInputHoursLabels[1]
-            const rawThirdHourLabel = alarmActualTimeInputHoursLabels[2]
-            const firstHourLabel = Number(rawFirstHourLabel)
-            const secondHourLabel = Number(rawSecondHourLabel)
-            const thirdHourLabel = Number(rawThirdHourLabel)
-            updatedAlarmActualTimeInputHoursLabels[0] = getTimeLabel(firstHourLabel + timeLabelRatio) 
-            updatedAlarmActualTimeInputHoursLabels[1] = getTimeLabel(secondHourLabel + timeLabelRatio)
-            updatedAlarmActualTimeInputHoursLabels[2] = getTimeLabel(thirdHourLabel + timeLabelRatio)
-            setAlarmActualTimeInputHoursLabels(updatedAlarmActualTimeInputHoursLabels)
-          }}>
+          {/*
+            TODO переписать поля с датами под DateTimePicker от expo
+          */}
+          <ScrollView
+            style={styles.addAlarmTimeInputItemScroll}
+            onScroll={(scroll) => {
+              const scrollEvent = scroll.nativeEvent
+              const offset = scrollEvent.contentOffset
+              const scrollOffset = offset.y
+              const correctScrollOffset = scrollOffset / 45
+              const repeatedHoursTimeLabelsIndex = Number.parseInt(correctScrollOffset)
+              const hoursTime = repeatedHoursTimeLabels[repeatedHoursTimeLabelsIndex]
+              setAlarmHoursTime(hoursTime)
+            }}
+            ref={(ref) => {
+              ref.scrollTo({
+                x: 0,
+                y: 2500,
+                animated: false
+              })
+            }}
+          >
             {
-              alarmActualTimeInputHoursLabels.map((alarmActualTimeInputHoursLabel, alarmActualTimeInputHoursLabelIndex) => {
+              repeatedHoursTimeLabels.map((timeLabel, timeLabelIndex) => {
                 return (
-                  <TouchableOpacity key={alarmActualTimeInputHoursLabelIndex} onPress={() => {
+                  <TouchableOpacity key={timeLabelIndex} onPress={() => {
                     console.log('выбираю часы для Будильника')
-                    setAlarmHoursTime(alarmActualTimeInputHoursLabel)
+                    setAlarmHoursTime(timeLabel)
                   }}>
-                    <Text style={[
+                    <Text style={
+                      [
                         styles.addAlarmTimeInputItemLabel,
-                        (alarmActualTimeInputHoursLabelIndex == 0 || alarmActualTimeInputHoursLabelIndex == 2) ? styles.alarmBluredTimeInputLabel : ''
-                      ]}>
+                        alarmHoursTime === timeLabel ? '' : styles.alarmBluredTimeInputLabel 
+                      ]
+                    }>
                       {
-                        alarmActualTimeInputHoursLabel
+                        timeLabel
                       }
                     </Text>
                   </TouchableOpacity>
@@ -469,47 +1053,43 @@ export function AddAlarmActivity({ navigation }) {
           </ScrollView>
         </View>
         <View style={styles.addAlarmTimeInputItem}>
-          <ScrollView style={styles.addAlarmTimeInputItemScroll} onScroll={(scroll) => {
-            const scrollEvent = scroll.nativeEvent
-            const scrollOffset = scrollEvent.contentOffset
-            const scrollOffsetByYCoord = scrollOffset.y 
-            let offsetFromScrollTop = 0
-            const isLt = scrollOffsetByYCoord < lastScrollOffsetByYCoordFromAlarmTimeInputMinutesLabel
-            const isGt = scrollOffsetByYCoord > lastScrollOffsetByYCoordFromAlarmTimeInputMinutesLabel
-            if (isLt) {
-              offsetFromScrollTop = lastScrollOffsetByYCoordFromAlarmTimeInputMinutesLabel - scrollOffsetByYCoord
-            } else if (isGt) {
-              offsetFromScrollTop = scrollOffsetByYCoord - lastScrollOffsetByYCoordFromAlarmTimeInputMinutesLabel 
-            }
-            setLastScrollOffsetByYCoordFromAlarmTimeInputMinutesLabel(scrollOffsetByYCoord)
-            const debugMsg = offsetFromScrollTop
-            console.log(debugMsg)
-            const updatedAlarmActualTimeInputMinutesLabels = []
-            const timeLabelRatio = isLt ? -1 : 1
-            const rawFirstMinuteLabel = alarmActualTimeInputMinutesLabels[0]
-            const rawSecondMinuteLabel = alarmActualTimeInputMinutesLabels[1]
-            const rawThirdMinuteLabel = alarmActualTimeInputMinutesLabels[2]
-            const firstMinuteLabel = Number(rawFirstMinuteLabel)
-            const secondMinuteLabel = Number(rawSecondMinuteLabel)
-            const thirdMinuteLabel = Number(rawThirdMinuteLabel)
-            updatedAlarmActualTimeInputMinutesLabels[0] = getTimeLabel(firstMinuteLabel + timeLabelRatio) 
-            updatedAlarmActualTimeInputMinutesLabels[1] = getTimeLabel(secondMinuteLabel + timeLabelRatio)
-            updatedAlarmActualTimeInputMinutesLabels[2] = getTimeLabel(thirdMinuteLabel + timeLabelRatio)
-            setAlarmActualTimeInputMinutesLabels(updatedAlarmActualTimeInputMinutesLabels)
-          }}>
+          {/*
+            TODO переписать поля с датами под DateTimePicker от expo
+          */}
+          <ScrollView 
+            ref={(ref) => {
+              ref.scrollTo({
+                x: 0,
+                y: 7500,
+                animated: false
+              })
+            }}
+            style={styles.addAlarmTimeInputItemScroll}
+            onScroll={(scroll) => {
+              const scrollEvent = scroll.nativeEvent
+              const offset = scrollEvent.contentOffset
+              const scrollOffset = offset.y
+              const correctScrollOffset = scrollOffset / 45
+              const repeatedMinutesTimeLabelsIndex = Number.parseInt(correctScrollOffset)
+              const minutesTime = repeatedMinutesTimeLabels[repeatedMinutesTimeLabelsIndex]
+              setAlarmMinutesTime(minutesTime)
+            }}
+          >
             {
-              alarmActualTimeInputMinutesLabels.map((alarmActualTimeInputMinutesLabel, alarmActualTimeInputMinutesLabelIndex) => {
+              repeatedMinutesTimeLabels.map((timeLabel, timeLabelIndex) => {
                 return (
-                  <TouchableOpacity key={alarmActualTimeInputMinutesLabelIndex} onPress={() => {
+                  <TouchableOpacity key={timeLabelIndex} onPress={() => {
                     console.log('выбираю минуты для Будильника')
-                    setAlarmMinutesTime(alarmActualTimeInputMinutesLabel)
+                    setAlarmMinutesTime(timeLabel)
                   }}>
-                    <Text style={[
+                    <Text style={
+                      [
                         styles.addAlarmTimeInputItemLabel,
-                        (alarmActualTimeInputMinutesLabelIndex == 0 || alarmActualTimeInputMinutesLabelIndex == 2) ? styles.alarmBluredTimeInputLabel : ''
-                      ]}>
+                        alarmMinutesTime === timeLabel ? '' : styles.alarmBluredTimeInputLabel 
+                      ]
+                    }>
                       {
-                        alarmActualTimeInputMinutesLabel
+                        timeLabel
                       }
                     </Text>
                   </TouchableOpacity>
@@ -648,7 +1228,7 @@ export function AddAlarmActivity({ navigation }) {
         </TouchableOpacity>
         <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
           console.log('создаю Будильник')
-          const alarmTime = `${alarmActualTimeInputHoursLabels[1]}:${alarmActualTimeInputMinutesLabels[1]}` 
+          const alarmTime = `${alarmHoursTime}:${alarmMinutesTime}` 
           let sqlStatement = `INSERT INTO \"alarms\"(time, date, isEnabled) VALUES (\"${alarmTime}\",\"${alarmDate}\", true);`
           db.transaction(transaction => {
             transaction.executeSql(sqlStatement, [], (tx, receivedContacts) => {
@@ -878,5 +1458,46 @@ const styles = StyleSheet.create({
   addAlarmTimeInputItemScroll: {
     height: 125,
     overflow: 'hidden'
+  },
+  intervals: {
+    
+  },
+  intervalsItem: {
+    display: 'flex',
+    flexDirection: 'row',
+    marginVertical: 15
+  },
+  intervalsItemLabel: {
+    width: '33%',
+    textAlign: 'center'
+  },
+  startTimerBtns: {
+    display: 'flex',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    marginVertical: 50
+  },
+  startTimerBtn: {
+    marginHorizontal: 50
+  },
+  startTimerLabel: {
+    fontSize: 36
+  },
+  startTimerLabelBlock: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderColor: 'rgb(0, 0, 0)',
+    borderWidth: 2,
+    width: 350,
+    height: 350,
+    marginVertical: 50,
+    borderRadius: '100%'
+  },
+  startTimerLabelContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
   }
 })
