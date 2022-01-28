@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Switch, Button } from 'react-native'
 import { Feather } from '@expo/vector-icons'
 import { NavigationContainer } from '@react-navigation/native'
@@ -6,6 +6,7 @@ import { createStackNavigator } from '@react-navigation/stack'
 import * as SQLite from 'expo-sqlite'
 import { TextInput } from 'react-native-gesture-handler'
 import { Entypo } from '@expo/vector-icons'
+import { AntDesign } from '@expo/vector-icons'
 
 var db = null
 
@@ -18,7 +19,13 @@ export default function App() {
   db.transaction(transaction => {
     let sqlStatement = "CREATE TABLE IF NOT EXISTS alarms (_id INTEGER PRIMARY KEY AUTOINCREMENT, time TEXT, date TEXT, isEnabled BOOLEAN);"
     transaction.executeSql(sqlStatement, [], (tx, receivedTable) => {
-        
+      sqlStatement = "CREATE TABLE IF NOT EXISTS cities (_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT);"
+      transaction.executeSql(sqlStatement, [], (tx, receivedTable) => {
+        sqlStatement = "CREATE TABLE IF NOT EXISTS timers (_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, minutes TEXT, seconds TEXT);"
+        transaction.executeSql(sqlStatement, [], (tx, receivedTable) => {
+            
+        })  
+      })  
     })
   })
 
@@ -27,6 +34,10 @@ export default function App() {
       <Stack.Navigator initialRouteName={ testActivity }>
         <Stack.Screen name="MainActivity" component={ MainActivity } />
         <Stack.Screen name="AddAlarmActivity" component={ AddAlarmActivity } />
+        <Stack.Screen
+          name="AddWorldTimeActivity"
+          component={ AddWorldTimeActivity }
+        />
       </Stack.Navigator>
     </NavigationContainer>
   )
@@ -62,12 +73,16 @@ export function MainActivity({ navigation }) {
 
   const [ cities, setCities ] = useState([
     {
-      time: '11:00',
-      name: 'Лондон'
+      id: 1,
+      name: 'Лондон',
+      minutes: '11',
+      seconds: '00'
     },
     {
-      time: '12:00',
-      name: 'Пекин'
+      id: 2,
+      name: 'Пекин',
+      minutes: '12',
+      seconds: '00'
     }
   ])
 
@@ -91,7 +106,45 @@ export function MainActivity({ navigation }) {
   const [intervalBtnContent, setIntervalBtnContent] = useState('Интервал')
   const [intervals, setIntervals] = useState([]) 
   const [startTimerTitle, setStartTimerTitle] = useState('10:00')
-
+  const initialCustomTimers = [
+    {
+      name: 'my_custom_timer',
+      minutes: '00',
+      seconds: '00'
+    },
+    {
+      name: '',
+      minutes: '00',
+      seconds: '00'
+    },
+    {
+      name: '',
+      minutes: '00',
+      seconds: '00'
+    },
+    {
+      name: '',
+      minutes: '00',
+      seconds: '00'
+    },
+    {
+      name: '',
+      minutes: '00',
+      seconds: '00'
+    }
+  ]
+  const [customTimers, setCustomTimers] = useState(initialCustomTimers)
+  var timersTogglers = customTimers.map(customTimer => {
+    const timerToggler = {
+      activated: false,
+      setActivated: null
+    }
+    const [a, b] = useState(customTimer.activated)  
+    timerToggler.activated = a
+    timerToggler.setActivated = b
+    return timerToggler
+  })
+  
   const alarmsTogglers = alarms.map(alarm => {
     const alarmToggler = {
       isEnabled: false,
@@ -194,6 +247,10 @@ export function MainActivity({ navigation }) {
             <View style={styles.alarmsTabBtns}>
               <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
                 console.log('создаю Будильник')
+                navigation.navigate('AddWorldTimeActivity', {
+                  action: 'add',
+                  name: ''
+                })
               }}>
                 <Feather style={styles.alarmsTabBtn} name="plus" size={24} color="black" />
               </TouchableOpacity>
@@ -208,7 +265,16 @@ export function MainActivity({ navigation }) {
                 cities.length >= 1 ?
                 cities.map((city, cityIndex) => {
                     return (
-                      <View style={styles.alarm} key={cityIndex}>
+                      <TouchableOpacity
+                        style={styles.alarm}
+                        key={cityIndex}
+                        onPress={() => {
+                          navigation.navigate('AddWorldTimeActivity', {
+                            action: 'change',
+                            name: city.name
+                          })
+                        }}
+                      >
                         <View>
                           <Text style={styles.cityName}>
                             {
@@ -224,7 +290,7 @@ export function MainActivity({ navigation }) {
                             city.time
                           }
                         </Text>
-                      </View>
+                      </TouchableOpacity>
                     )
                   })
                 :
@@ -374,9 +440,23 @@ export function MainActivity({ navigation }) {
         : currentTab == 'Таймер' ?
         <View>
           <View style={styles.alarmsTabBtns}>
-            <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
+            <TouchableOpacity
+              style={styles.footerTabLabel}
+              onPress={() => {
                 console.log('создаю Таймер')
-              }}>
+                const timerName = ''
+                const timerMinutes = '00'
+                const timerSeconds = '00'
+                let sqlStatement = `INSERT INTO \"timers\"(name, minutes, seconds) VALUES (\"${timerName}\", \"${timerMinutes}\", \"${timerSeconds}\");`
+                db.transaction(transaction => {
+                  transaction.executeSql(sqlStatement, [], (tx, receivedTimers) => {
+                    
+                  }, (tx) => {
+                    console.log('ошибка получения таймеров')
+                  })
+                })
+              }}
+            >
               <Feather style={styles.alarmsTabBtn} name="plus" size={24} color="black" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
@@ -436,9 +516,37 @@ export function MainActivity({ navigation }) {
             </ScrollView>
           </View>
           <View style={styles.timerBtns}>
-            <View  style={styles.timerBtn}>
-              <Button color={'rgb(200, 200, 200)'} title="00:10:00" />
-            </View>
+            <ScrollView style={styles.customTimers} horizontal={true}>
+              {
+                customTimers.map((customTimer, customTimerIndex) => {
+                  return (
+                    <TouchableOpacity
+                      onPress={() => {
+                        timersTogglers.forEach((timerToggler, timerTogglerIndex) => {
+                          timersTogglers[timerTogglerIndex].setActivated(false)
+                        })
+                        timersTogglers[customTimerIndex].setActivated(true)
+                      }}
+                      key={customTimerIndex}
+                      style={
+                        [
+                          styles.customTimer,
+                          timersTogglers[customTimerIndex].activated ? styles.activatedCustomTimer : styles.deactivatedCustomTimer
+                        ]
+                      }>
+                      <Text style={styles.customTimerTitle}>
+                        {
+                          customTimer.name.length >= 1 ?
+                            `${customTimer.name}\n${customTimer.minutes}:${customTimer.seconds}`
+                          :
+                          `${customTimer.minutes}:${customTimer.seconds}`
+                        }
+                      </Text>
+                    </TouchableOpacity>
+                  )
+                })
+              }
+            </ScrollView>
             <View  style={styles.timerBtn}>
               <Button
                 title="Начать"
@@ -1247,6 +1355,73 @@ export function AddAlarmActivity({ navigation }) {
   )
 }
 
+export function AddWorldTimeActivity({ route, navigation }) {
+  
+  const [addWorldTimeBtnTitle, setAddWorldTimeBtnTitle] = useState('Добавить')
+  
+  const [cityName, setCityName] = useState('')
+
+  const [addWorldTimeTitle, setAddWorldTimeTitle] = useState('Добавить город')
+
+  var isChangeCity = false
+  var changedCityName = 0
+  
+  useEffect(() => {
+    const { action, name } = route.params
+    isChangeCity = action === 'change'
+    changedCityName = name
+    if (isChangeCity) {
+      setAddWorldTimeBtnTitle('Изменить')
+      setAddWorldTimeTitle('Изменить город')
+    }
+  }, [])
+
+  return (
+    <View>
+      <View style={styles.addWorldTimeHeader}>
+        <AntDesign style={styles.addWorldTimeHeaderItem} name="caretleft" size={24} color="black" />
+        <Text style={[styles.addWorldTimeTitle, styles.addWorldTimeHeaderItem]}>
+          {
+            addWorldTimeTitle
+          }
+        </Text>
+        <AntDesign style={styles.addWorldTimeHeaderItem} name="search1" size={24} color="black" />
+      </View>
+      <TextInput
+        style={styles.addWorldTimeCityName}
+        value={cityName}
+        onChangeText={value => setCityName(value)}
+      />
+      <View style={styles.addWorldTimeBtn}>
+        <Button
+          title={addWorldTimeBtnTitle}
+          onPress={() => {
+            if (isChangeCity) {
+              let sqlStatement = `UPDATE cities SET name=\"${cityName}\" WHERE name=${changedCityName};`
+              db.transaction(transaction => {
+                transaction.executeSql(sqlStatement, [], (tx, receivedCities) => {
+                  
+                }, (tx) => {
+                  console.log('ошибка получения городов')
+                })
+              })
+            } else {
+              let sqlStatement = `INSERT INTO \"cities\"(name) VALUES (\"${cityName}\");`
+              db.transaction(transaction => {
+                transaction.executeSql(sqlStatement, [], (tx, receivedCities) => {
+                  
+                }, (tx) => {
+                  console.log('ошибка получения городов')
+                })
+              })
+            }
+          }}
+        />
+      </View>
+    </View>
+  )
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -1499,5 +1674,49 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'center',
+  },
+  customTimer: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 185,
+    height: 185,
+    borderRadius: '100%',
+    marginHorizontal: 15
+  },
+  customTimerTitle: {
+    fontSize: 16,
+    textAlign: 'center'
+  },
+  deactivatedCustomTimer: {
+    backgroundColor: 'rgb(200, 200, 200)'
+  },
+  activatedCustomTimer: {
+    borderWidth: 2,
+    backgroundColor: 'rgb(255, 255, 255)'
+  },
+  customTimers: {
+    marginVertical: 25
+  },
+  addWorldTimeHeader: {
+    display: 'flex',
+    flexDirection: 'row'
+  },
+  addWorldTimeHeaderItem: {
+    marginHorizontal: 15
+  },
+  addWorldTimeBtn: {
+    width: 125,
+    marginHorizontal: 'auto'
+  },
+  addWorldTimeTitle: {
+    fontSize: 20
+  },
+  addWorldTimeCityName: {
+    borderBottomWidth: 2,
+    height: 35,
+    marginVertical: 35,
+    marginHorizontal: 50
   }
 })
