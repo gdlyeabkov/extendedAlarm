@@ -134,50 +134,75 @@ export function MainActivity({ navigation }) {
     }
   ]
   const [customTimers, setCustomTimers] = useState(initialCustomTimers)
-  var timersTogglers = customTimers.map(customTimer => {
-    const timerToggler = {
-      activated: false,
-      setActivated: null
-    }
-    const [a, b] = useState(customTimer.activated)  
-    timerToggler.activated = a
-    timerToggler.setActivated = b
-    return timerToggler
-  })
   
-  const alarmsTogglers = alarms.map(alarm => {
-    const alarmToggler = {
-      isEnabled: false,
-      setIsEnabled: null,
-      toggleSwitch: null
-    }
-    const [a, b] = useState(alarm.isEnabled)  
-    alarmToggler.isEnabled = a
-    alarmToggler.setIsEnabled = b
-    alarmToggler.toggleSwitch = () => alarmToggler.setIsEnabled(previousState => !previousState)
-    return alarmToggler
+  db.transaction(transaction => {
+    const sqlStatement = "SELECT * FROM alarms;"
+    transaction.executeSql(sqlStatement, [], (tx, receivedAlarms) => {
+      let tempReceivedAlarms = []
+      Array.from(receivedAlarms.rows).forEach((remoteAlarmRow, remoteAlarmRowIdx) => {
+        const alarm = Object.values(receivedAlarms.rows.item(remoteAlarmRowIdx))
+        tempReceivedAlarms = [
+          ...tempReceivedAlarms,
+          {
+            id: alarm[0],
+            name: '',
+            time: alarm[1],
+            date: alarm[3],
+            isEnabled: alarm[4],
+          }
+        ]
+
+      })
+      setAlarms(tempReceivedAlarms)
+    })
   })
 
-  // пока чтение будильников вызывает ошибку
-  // db.transaction(transaction => {
-  //   const sqlStatement = "SELECT * FROM alarms;"
-  //   transaction.executeSql(sqlStatement, [], (tx, receivedAlarms) => {
-  //     let tempReceivedAlarms = []
-  //     Array.from(receivedAlarms.rows).forEach((remoteAlarmRow, remoteAlarmRowIdx) => {
-  //       const alarm = Object.values(receivedAlarms.rows.item(remoteAlarmRowIdx))
-  //       tempReceivedAlarms = [
-  //         ...tempReceivedAlarms,
-  //         {
-  //           id: alarm[0],
-  //           name: '',
-  //           time: alarm[1],
-  //           date: alarm[3],
-  //           isEnabled: alarm[4],
-  //         }
-  //       ]
-  //     })
-  //     setAlarms(tempReceivedAlarms)
-  //   })
+  db.transaction(transaction => {
+    const sqlStatement = "SELECT * FROM cities;"
+    transaction.executeSql(sqlStatement, [], (tx, receivedCities) => {
+      let tempReceivedCities = []
+      Array.from(receivedCities.rows).forEach((remoteCityRow, remoteCityRowIdx) => {
+        const city = Object.values(receivedCities.rows.item(remoteCityRowIdx))
+        tempReceivedCities = [
+          ...tempReceivedCities,
+          {
+            id: city[0],
+            name: city[1]
+          }
+        ]
+
+      })
+      setCities(tempReceivedCities)
+    })
+  })
+  
+  // var timersTogglers = customTimers.map(customTimer => {
+  //   const timerToggler = {
+  //     activated: false,
+  //     setActivated: null
+  //   }
+  //   const [a, b] = useState(customTimer.activated)  
+  //   timerToggler.activated = a
+  //   timerToggler.setActivated = b
+  //   return timerToggler
+  // })
+  
+  const alarmsTogglers = [
+    {
+      isEnabled: false
+    }
+  ]
+  // const alarmsTogglers = alarms.map(alarm => {
+  //   const alarmToggler = {
+  //     isEnabled: false,
+  //     setIsEnabled: null,
+  //     toggleSwitch: null
+  //   }
+  //   const [a, b] = useState(alarm.isEnabled)  
+  //   alarmToggler.isEnabled = a
+  //   alarmToggler.setIsEnabled = b
+  //   alarmToggler.toggleSwitch = () => alarmToggler.setIsEnabled(previousState => !previousState)
+  //   return alarmToggler
   // })
 
   return (
@@ -207,7 +232,10 @@ export function MainActivity({ navigation }) {
                 alarms.length >= 1 ?
                   alarms.map((alarm, alarmIndex) => {
                     return (
-                      <View style={styles.alarm} key={alarmIndex}>
+                      <TouchableOpacity style={styles.alarm} key={alarmIndex} onPress={() => {
+                        console.log('создаю Будильник')
+                        navigation.navigate('AddAlarmActivity')
+                      }}>
                         <Text style={styles.alarmTime}>
                           {
                             alarm.time
@@ -217,12 +245,16 @@ export function MainActivity({ navigation }) {
                           <Text style={styles.alarmDate}>
                             вт, 25 янв.
                           </Text>
-                          <Switch
+                          {/* <Switch
                             onValueChange={alarmsTogglers[alarmIndex].toggleSwitch}
                             value={alarmsTogglers[alarmIndex].isEnabled}
+                          /> */}
+                          <Switch
+                            onValueChange={alarmsTogglers[0].toggleSwitch}
+                            value={alarmsTogglers[0].isEnabled}
                           />
                         </View>
-                      </View>
+                      </TouchableOpacity>
                     )
                   })
                 :
