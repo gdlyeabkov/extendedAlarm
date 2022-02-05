@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Switch, Button } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Switch, Button, Alert } from 'react-native'
 import { Feather } from '@expo/vector-icons'
 import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
@@ -7,6 +7,12 @@ import * as SQLite from 'expo-sqlite'
 import { TextInput } from 'react-native-gesture-handler'
 import { Entypo } from '@expo/vector-icons'
 import { AntDesign } from '@expo/vector-icons'
+import {
+  Paragraph,
+  Dialog,
+  Portal,
+  Provider,
+} from 'react-native-paper'
 
 var db = null
 
@@ -21,9 +27,9 @@ export default function App() {
     transaction.executeSql(sqlStatement, [], (tx, receivedTable) => {
       sqlStatement = "CREATE TABLE IF NOT EXISTS cities (_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT);"
       transaction.executeSql(sqlStatement, [], (tx, receivedTable) => {
-        sqlStatement = "CREATE TABLE IF NOT EXISTS timers (_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, minutes TEXT, seconds TEXT);"
+        sqlStatement = "CREATE TABLE IF NOT EXISTS timers (_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, hours TEXT, minutes TEXT, seconds TEXT);"
         transaction.executeSql(sqlStatement, [], (tx, receivedTable) => {
-            
+          
         })  
       })  
     })
@@ -176,6 +182,29 @@ export function MainActivity({ navigation }) {
     })
   })
   
+  db.transaction(transaction => {
+    const sqlStatement = "SELECT * FROM timers;"
+    transaction.executeSql(sqlStatement, [], (tx, receivedCities) => {
+      let tempReceivedCities = []
+      Array.from(receivedCities.rows).forEach((remoteCityRow, remoteCityRowIdx) => {
+        const city = Object.values(receivedCities.rows.item(remoteCityRowIdx))
+        tempReceivedCities = [
+          ...tempReceivedCities,
+          {
+            id: city[0],
+            name: city[1],
+            hours: city[2],
+            minutes: city[3],
+            seconds: city[4]
+          }
+        ]
+
+      })
+      setCustomTimers(tempReceivedCities)
+    })
+  })
+
+  const [timersTogglers, setTimersTogglers] = useState([])
   // var timersTogglers = customTimers.map(customTimer => {
   //   const timerToggler = {
   //     activated: false,
@@ -185,25 +214,85 @@ export function MainActivity({ navigation }) {
   //   timerToggler.activated = a
   //   timerToggler.setActivated = b
   //   return timerToggler
-  // })
+  // })  
   
-  const alarmsTogglers = [
-    {
-      isEnabled: false
+  const [alarmsTogglers, setAlarmsTogglers] = useState([])
+
+  const [stopWatchTimer, setStopWatchTimer] = useState(null)
+  
+  const [stopWatchIntervalTimer, setStopWatchIntervalTimer] = useState(null)
+
+  const [circleSeconds, setCircleSeconds] = useState(0)
+
+  const [circleMinutes, setCircleMinutes] = useState(0)
+
+  const [circleHours, setCircleHours] = useState(0)
+
+  const [isDialogVisible, setIsDialogVisible] = useState(false)
+
+  const [newCustomTimerTime, setNewCustomTimerTime] = useState('')
+  
+  const [newCustomTimerName, setNewCustomTimerName] = useState('')
+
+  const startStopWatchTimer = () => {
+    const isNotStart = !isStart
+    if (isNotStart) {
+      setIsIntervalBtnDisabled(false)
+      setIntervalBtnContent()
+      setStartBtnBackgroundColor(stopColorBtn)
+      setStartBtnContent(stopBtnLabel)
+      let lastStopWatchTimerTitle = title
+      setStopWatchTimer(
+        setInterval(() => {
+          const timeParts = lastStopWatchTimerTitle.split(timePartsSeparator)
+          const rawHours = timeParts[0]
+          const rawMinutes = timeParts[1]
+          const rawSeconds = timeParts[2]
+          let hours = Number(rawHours)
+          let minutes = Number(rawMinutes)
+          let seconds = Number(rawSeconds)
+          seconds = seconds + 1
+          const isToggleSecond = seconds == countSecondsInMinute
+          if (isToggleSecond) {
+            seconds = initialSeconds
+            minutes = minutes + 1
+            const isToggleHour = minutes == countMinutesInHour
+            if (isToggleHour) {
+              minutes = initialMinutes
+              hours = hours + 1
+            }
+          }
+          let updatedHoursText = hours.toString()
+          const countHoursChars = updatedHoursText.length
+          const isAddHoursPrefix = countHoursChars == 1
+          if (isAddHoursPrefix) {
+            updatedHoursText = oneCharPrefix + updatedHoursText
+          }
+          let updatedMinutesText = minutes.toString()
+          const countMinutesChars = updatedMinutesText.length
+          const isAddMinutesPrefix = countMinutesChars == 1
+          if (isAddMinutesPrefix) {
+            updatedMinutesText = oneCharPrefix + updatedMinutesText
+          }
+          let updatedSecondsText = seconds.toString()
+          const countSecondsChars = updatedSecondsText.length
+          const isAddSecondsPrefix = countSecondsChars === 1
+          if (isAddSecondsPrefix) {
+            updatedSecondsText = oneCharPrefix + updatedSecondsText
+          }
+          const currentTime = `${updatedHoursText}:${updatedMinutesText}:${updatedSecondsText}`
+          setTitle(currentTime)
+          lastStopWatchTimerTitle = currentTime
+        }, millisecondsInSecond)
+      )
+    } else {
+      setStartBtnBackgroundColor(startColorBtn)
+      setStartBtnContent(resumeBtnLabel)
+      clearInterval(stopWatchTimer)
+      setStopWatchTimer(null)
     }
-  ]
-  // const alarmsTogglers = alarms.map(alarm => {
-  //   const alarmToggler = {
-  //     isEnabled: false,
-  //     setIsEnabled: null,
-  //     toggleSwitch: null
-  //   }
-  //   const [a, b] = useState(alarm.isEnabled)  
-  //   alarmToggler.isEnabled = a
-  //   alarmToggler.setIsEnabled = b
-  //   alarmToggler.toggleSwitch = () => alarmToggler.setIsEnabled(previousState => !previousState)
-  //   return alarmToggler
-  // })
+    setIsStart(!isStart)
+  }
 
   return (
     <View style={styles.backDrop}>
@@ -232,7 +321,7 @@ export function MainActivity({ navigation }) {
                 alarms.length >= 1 ?
                   alarms.map((alarm, alarmIndex) => {
                     return (
-                      <TouchableOpacity style={styles.alarm} key={alarmIndex} onPress={() => {
+                      <View style={styles.alarm} key={alarmIndex} onPress={() => {
                         console.log('создаю Будильник')
                         navigation.navigate('AddAlarmActivity')
                       }}>
@@ -245,16 +334,15 @@ export function MainActivity({ navigation }) {
                           <Text style={styles.alarmDate}>
                             вт, 25 янв.
                           </Text>
-                          {/* <Switch
-                            onValueChange={alarmsTogglers[alarmIndex].toggleSwitch}
-                            value={alarmsTogglers[alarmIndex].isEnabled}
-                          /> */}
                           <Switch
-                            onValueChange={alarmsTogglers[0].toggleSwitch}
-                            value={alarmsTogglers[0].isEnabled}
+                            onValueChange={() => {
+                              alarmsTogglers[alarmIndex] = !alarmsTogglers[alarmIndex]
+                              console.log(alarmsTogglers)
+                            }}
+                            value={alarmsTogglers[alarmIndex]}
                           />
                         </View>
-                      </TouchableOpacity>
+                      </View>
                     )
                   })
                 :
@@ -281,7 +369,7 @@ export function MainActivity({ navigation }) {
                 console.log('создаю Будильник')
                 navigation.navigate('AddWorldTimeActivity', {
                   action: 'add',
-                  name: ''
+                  id: 0
                 })
               }}>
                 <Feather style={styles.alarmsTabBtn} name="plus" size={24} color="black" />
@@ -303,7 +391,7 @@ export function MainActivity({ navigation }) {
                         onPress={() => {
                           navigation.navigate('AddWorldTimeActivity', {
                             action: 'change',
-                            name: city.name
+                            id: city.id
                           })
                         }}
                       >
@@ -400,71 +488,74 @@ export function MainActivity({ navigation }) {
                   if (isCirclesTop9) {
                     circleLabelContent = oneCharPrefix + circleLabelContent
                   }
+                  
+                  let parsedCircleSeconds = circleSeconds.toString()
+                  const countSecondsChars = parsedCircleSeconds.length
+                  const isAddSecondsPrefix = countSecondsChars === 1
+                  if (isAddSecondsPrefix) {
+                    parsedCircleSeconds = oneCharPrefix + parsedCircleSeconds
+                  }
+                  let parsedCircleMinutes = circleMinutes.toString()
+                  const countMinutesChars = parsedCircleMinutes.length
+                  const isAddMinutesPrefix = countMinutesChars === 1
+                  if (isAddMinutesPrefix) {
+                    parsedCircleMinutes = oneCharPrefix + parsedCircleMinutes
+                  }
+                  let parsedCircleHours = circleHours.toString()
+                  const countHoursChars = parsedCircleHours.length
+                  const isAddHoursPrefix = countHoursChars == 1
+                  if (isAddHoursPrefix) {
+                    parsedCircleHours = oneCharPrefix + parsedCircleHours
+                  }
+                  
+                  const circlTimeLabel = parsedCircleHours + timePartsSeparator + parsedCircleMinutes + timePartsSeparator + parsedCircleSeconds
                   const interval = {
                     circle: circleLabelContent,
-                    circleTime: '00:00:00',
-                    totalTime: '00:00:00'
+                    circleTime: circlTimeLabel,
+                    totalTime: title
                   }
                   setIntervals([
                     interval,
                     ...intervals
                   ])
+                  if (stopWatchIntervalTimer !== null) {
+                    clearInterval(stopWatchIntervalTimer)
+                    setStopWatchIntervalTimer(null)
+                    setCircleHours(0)
+                    setCircleMinutes(0)
+                    setCircleSeconds(0)  
+                  }
+                  let newCircleHours = 0
+                  let newCircleMinutes = 0
+                  let newCircleSeconds = 0
+                  setStopWatchIntervalTimer(
+                    setInterval(() => {
+                      
+                      newCircleSeconds++
+                      setCircleSeconds(newCircleSeconds)
+                      const isToggleSecond = circleSeconds === countSecondsInMinute
+                      if (isToggleSecond) {
+                        newCircleSeconds = initialSeconds
+                        setCircleSeconds(newCircleSeconds)
+                        newCircleMinutes++
+                        setCircleMinutes(newCircleMinutes)
+                        const isToggleHour = circleMinutes === countMinutesInHour
+                        if (isToggleHour) {
+                          newCircleMinutes = initialMinutes
+                          setCircleMinutes(newCircleMinutes)
+                          newCircleHours++
+                          setCircleHours(newCircleHours)
+                        }
+                      }
+                      
+                    }, millisecondsInSecond)
+                  )
                 }}
               />
             </View>
             <View  style={styles.stopwatchBtn}>
               <Button onPress={() => {
-                const isNotStart = !isStart
-                if (isNotStart) {
-                  setIsIntervalBtnDisabled(false)
-                  setIntervalBtnContent()
-                  setStartBtnBackgroundColor(stopColorBtn)
-                  setStartBtnContent(stopBtnLabel)
-                  setInterval(() => {
-                    const timeParts = title.split(timePartsSeparator)
-                    const rawHours = timeParts[0]
-                    const rawMinutes = timeParts[1]
-                    const rawSeconds = timeParts[2]
-                    const hours = Number(rawHours)
-                    const minutes = Number(rawMinutes)
-                    let seconds = Number(rawSeconds)
-                    seconds = seconds + 1
-                    const isToggleSecond = seconds == countSecondsInMinute
-                    if (isToggleSecond) {
-                      seconds = initialSeconds
-                      minutes = minutes + 1
-                      const isToggleHour = minutes == countMinutesInHour
-                      if (isToggleHour) {
-                        minutes = initialMinutes
-                        hours = hours + 1
-                      }
-                    }
-                    let updatedHoursText = hours.toString()
-                    const countHoursChars = updatedHoursText.length
-                    const isAddHoursPrefix = countHoursChars == 1
-                    if (isAddHoursPrefix) {
-                      updatedHoursText = oneCharPrefix + updatedHoursText
-                    }
-                    let updatedMinutesText = minutes.toString()
-                    const countMinutesChars = updatedMinutesText.length
-                    const isAddMinutesPrefix = countMinutesChars == 1
-                    if (isAddMinutesPrefix) {
-                      updatedMinutesText = oneCharPrefix + updatedMinutesText
-                    }
-                    let updatedSecondsText = seconds.toString()
-                    const countSecondsChars = updatedSecondsText.length
-                    const isAddSecondsPrefix = countSecondsChars === 1
-                    if (isAddSecondsPrefix) {
-                      updatedSecondsText = oneCharPrefix + updatedSecondsText
-                    }
-                    const currentTime = `${updatedHoursText}:${updatedMinutesText}:${updatedSecondsText}`
-                    setTitle(currentTime)
-                  }, millisecondsInSecond)
-                } else {
-                  setStartBtnBackgroundColor(startColorBtn)
-                  setStartBtnContent(resumeBtnLabel)
-                }
-                setIsStart(!isStart)
+                startStopWatchTimer()
               }} color={startBtnBackgroundColor} title={startBtnContent} />
             </View>
           </View>
@@ -475,18 +566,7 @@ export function MainActivity({ navigation }) {
             <TouchableOpacity
               style={styles.footerTabLabel}
               onPress={() => {
-                console.log('создаю Таймер')
-                const timerName = ''
-                const timerMinutes = '00'
-                const timerSeconds = '00'
-                let sqlStatement = `INSERT INTO \"timers\"(name, minutes, seconds) VALUES (\"${timerName}\", \"${timerMinutes}\", \"${timerSeconds}\");`
-                db.transaction(transaction => {
-                  transaction.executeSql(sqlStatement, [], (tx, receivedTimers) => {
-                    
-                  }, (tx) => {
-                    console.log('ошибка получения таймеров')
-                  })
-                })
+                setIsDialogVisible(true)
               }}
             >
               <Feather style={styles.alarmsTabBtn} name="plus" size={24} color="black" />
@@ -554,24 +634,23 @@ export function MainActivity({ navigation }) {
                   return (
                     <TouchableOpacity
                       onPress={() => {
-                        timersTogglers.forEach((timerToggler, timerTogglerIndex) => {
-                          timersTogglers[timerTogglerIndex].setActivated(false)
-                        })
-                        timersTogglers[customTimerIndex].setActivated(true)
+                        timersTogglers.fill(false)
+                        timersTogglers[customTimerIndex] = !timersTogglers[customTimerIndex]
                       }}
-                      key={customTimerIndex}
                       style={
                         [
                           styles.customTimer,
-                          timersTogglers[customTimerIndex].activated ? styles.activatedCustomTimer : styles.deactivatedCustomTimer
+                          timersTogglers[customTimerIndex] ? styles.activatedCustomTimer : styles.deactivatedCustomTimer
                         ]
-                      }>
+                      }
+                      key={customTimerIndex}
+                    >
                       <Text style={styles.customTimerTitle}>
                         {
                           customTimer.name.length >= 1 ?
-                            `${customTimer.name}\n${customTimer.minutes}:${customTimer.seconds}`
+                            `${customTimer.name}\n${customTimer.hours}:${customTimer.minutes}:${customTimer.seconds}`
                           :
-                          `${customTimer.minutes}:${customTimer.seconds}`
+                          `${customTimer.hours}:${customTimer.minutes}:${customTimer.seconds}`
                         }
                       </Text>
                     </TouchableOpacity>
@@ -588,6 +667,46 @@ export function MainActivity({ navigation }) {
               />
             </View>
           </View>
+          <Dialog
+            visible={isDialogVisible}
+            onDismiss={() => setIsDialogVisible(false)}>
+            <Dialog.Title>Username</Dialog.Title>
+            <Dialog.Content>
+              <TextInput
+                value={newCustomTimerTime}
+                onChangeText={text => setNewCustomTimerTime(text)}
+              />
+              <TextInput
+                value={newCustomTimerName}
+                onChangeText={text => setNewCustomTimerName(text)}
+              />
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button title="Добавить" onPress={() => {
+                console.log(`создаю Таймер: newCustomTimerName: ${newCustomTimerName}; newCustomTimerTime: ${newCustomTimerTime}`)
+                const timerName = newCustomTimerName
+                const possibleTime = newCustomTimerTime.split(':')
+                const isTime = possibleTime.length === 3
+                if (isTime) {
+                  let timerHours = '00'
+                  timerHours = possibleTime[0]
+                  let timerMinutes = '00'
+                  timerHours = possibleTime[1]
+                  let timerSeconds = '00'
+                  timerSeconds = possibleTime[2]
+                  let sqlStatement = `INSERT INTO \"timers\"(name, hours, minutes, seconds) VALUES (\"${timerName}\", \"${timerHours}\", \"${timerMinutes}\", \"${timerSeconds}\");`
+                  db.transaction(transaction => {
+                    transaction.executeSql(sqlStatement, [], (tx, receivedTimers) => {
+                      
+                    }, (tx) => {
+                      console.log('ошибка получения таймеров')
+                    })
+                  })
+                  setIsDialogVisible(false)
+                }
+              }}>Done</Button>
+            </Dialog.Actions>
+          </Dialog>
         </View>
         : currentTab == 'TimerStart' ?
         <View>
@@ -1396,12 +1515,13 @@ export function AddWorldTimeActivity({ route, navigation }) {
   const [addWorldTimeTitle, setAddWorldTimeTitle] = useState('Добавить город')
 
   var isChangeCity = false
-  var changedCityName = 0
+  const [changedCityId, setChangedCityId] = useState(0)
   
   useEffect(() => {
-    const { action, name } = route.params
+    const { action, id } = route.params
     isChangeCity = action === 'change'
-    changedCityName = name
+    setChangedCityId(id)
+    console.log(`changedCityId: ${changedCityId}`)
     if (isChangeCity) {
       setAddWorldTimeBtnTitle('Изменить')
       setAddWorldTimeTitle('Изменить город')
@@ -1428,11 +1548,13 @@ export function AddWorldTimeActivity({ route, navigation }) {
         <Button
           title={addWorldTimeBtnTitle}
           onPress={() => {
-            if (isChangeCity) {
-              let sqlStatement = `UPDATE cities SET name=\"${cityName}\" WHERE name=${changedCityName};`
+            console.log(`isChangeCity ${isChangeCity} на имя ${cityName}`)
+            if (addWorldTimeBtnTitle === 'Изменить') {
+              console.log(`обновляю мировое время с _id = ${changedCityId} на имя ${cityName}`)
+              let sqlStatement = `UPDATE cities SET name=\"${cityName}\" WHERE _id=${changedCityId};`
               db.transaction(transaction => {
                 transaction.executeSql(sqlStatement, [], (tx, receivedCities) => {
-                  
+                  navigation.navigate('MainActivity')
                 }, (tx) => {
                   console.log('ошибка получения городов')
                 })
