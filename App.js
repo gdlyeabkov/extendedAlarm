@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Switch, Button, Alert } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Switch, Button, Alert, BackHandler } from 'react-native'
 import { Feather } from '@expo/vector-icons'
 import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import * as SQLite from 'expo-sqlite'
 import { TextInput } from 'react-native-gesture-handler'
 import { Entypo } from '@expo/vector-icons'
-import { AntDesign } from '@expo/vector-icons'
+import { AntDesign, Ionicons, MaterialIcons } from '@expo/vector-icons'
 import {
   Paragraph,
   Dialog,
   Portal,
   Provider,
+  Checkbox,
 } from 'react-native-paper'
 
 var db = null
@@ -986,6 +987,21 @@ export function MainActivity({ navigation }) {
 
   const [startedTimerSecondsTime, setStartedTimerSecondsTime] = useState('00')
 
+  const [isSelection, setIsSelection] = useState(false)
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', function () {
+      const isAlarmsActivity = currentTab == 'Будильник'
+      const isWorldTimeActivity = currentTab == 'Мировое время'
+      const isSelectionActivities = isAlarmsActivity || isWorldTimeActivity
+      if (isSelectionActivities) {
+        setIsSelection(false)
+        return true;
+      }
+      return false;
+    });
+  }, [])
+
   const startStopWatchTimer = () => {
     const isNotStart = !isStart
     if (isNotStart) {
@@ -1143,13 +1159,30 @@ export function MainActivity({ navigation }) {
                 alarms.length >= 1 ?
                   alarms.map((alarm, alarmIndex) => {
                     return (
-                      <View
+                      <TouchableOpacity
                         style={styles.alarm} key={alarmIndex}
                         onPress={() => {
                           console.log('создаю Будильник')
                           navigation.navigate('AddAlarmActivity')
                         }}
+                        onLongPress={() => {
+                          console.log('создаю дополнительное меню Будильника')
+                          setIsSelection(true)
+                        }}
                       >
+                        {
+                          isSelection ?
+                            <Checkbox
+                              value={true}
+                              onValueChange={() => {
+                                return false
+                              }}  
+                            />
+                          :
+                          <View>
+                            
+                          </View>
+                        }
                         <Text style={styles.alarmTime}>
                           {
                             alarm.time
@@ -1167,7 +1200,7 @@ export function MainActivity({ navigation }) {
                             value={alarmsTogglers[alarmIndex]}
                           />
                         </View>
-                      </View>
+                      </TouchableOpacity>
                     )
                   })
                 :
@@ -1219,7 +1252,24 @@ export function MainActivity({ navigation }) {
                             id: city.id
                           })
                         }}
+                        onLongPress={() => {
+                          console.log('создаю дополнительное меню города')
+                          setIsSelection(true)
+                        }}
                       >
+                        {
+                          isSelection ?
+                            <Checkbox
+                              value={true}
+                              onValueChange={() => {
+                                return false
+                              }}  
+                            />
+                          :
+                          <View>
+                            
+                          </View>
+                        }
                         <View>
                           <Text style={styles.cityName}>
                             {
@@ -2070,71 +2120,99 @@ export function MainActivity({ navigation }) {
         :
         <View />
       }
-      <View style={styles.footerTabsRow}>
-        <TouchableOpacity
-          style={styles.footerTabLabel}
-          onPress={() => {
-            console.log('Меняю вкладку на Будильник')
-            setCurrentTab('Будильник')
-          }}
-        >
-          <Text
-            style={
-              [
-                currentTab == 'Будильник' ? styles.activeFooterTabLabel : ''
-              ]
-            }
+      {
+        !isSelection ?
+          <View style={styles.footerTabsRow}>
+            <TouchableOpacity
+              style={styles.footerTabLabel}
+              onPress={() => {
+                console.log('Меняю вкладку на Будильник')
+                setCurrentTab('Будильник')
+              }}
+            >
+              <Text
+                style={
+                  [
+                    currentTab == 'Будильник' ? styles.activeFooterTabLabel : ''
+                  ]
+                }
+              >
+                Будильник
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.footerTabLabel}
+              onPress={() => {
+                console.log('Меняю вкладку на Мировое время')
+                setCurrentTab('Мировое время')
+              }}
+            >
+              <Text
+                style={
+                  [currentTab == 'Мировое время' ? styles.activeFooterTabLabel : '']
+                }
+              >
+                Мировое время
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.footerTabLabel}
+              onPress={() => {
+                console.log('Меняю вкладку на Секундомер')
+                setCurrentTab('Секундомер')
+              }}
+            >
+              <Text
+                style={
+                  [
+                    currentTab == 'Секундомер' ? styles.activeFooterTabLabel : ''
+                  ]
+                }
+              >
+                Секундомер
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
+              console.log('Меняю вкладку на Таймер')
+              setCurrentTab('Таймер')
+            }}>
+              <Text
+                style={
+                  [
+                    currentTab === 'Таймер' || currentTab === 'TimerStart'  ? styles.activeFooterTabLabel : ''
+                  ]
+                }
+              >
+                Таймер
+              </Text>
+            </TouchableOpacity>
+          </View>
+        :
+        <View style={styles.selectionFooter}>
+          <TouchableOpacity
+            style={styles.selectionFooterItem}
+            onPress={() => {
+
+            }}
           >
-            Будильник
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.footerTabLabel}
-          onPress={() => {
-            console.log('Меняю вкладку на Мировое время')
-            setCurrentTab('Мировое время')
-          }}
-        >
-          <Text
-            style={
-              [currentTab == 'Мировое время' ? styles.activeFooterTabLabel : '']
-            }
+            <MaterialIcons name="delete" size={24} color="black" />
+            <Text>
+              Удалить
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.selectionFooterItem}
+            onPress={() => {
+
+            }}
           >
-            Мировое время
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.footerTabLabel}
-          onPress={() => {
-            console.log('Меняю вкладку на Секундомер')
-            setCurrentTab('Секундомер')
-          }}
-        >
-          <Text
-            style={
-              [
-                currentTab == 'Секундомер' ? styles.activeFooterTabLabel : ''
-              ]
-            }
-          >
-            Секундомер
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
-          console.log('Меняю вкладку на Таймер')
-          setCurrentTab('Таймер')
-        }}>
-          <Text
-            style={
-              [
-                currentTab === 'Таймер' || currentTab === 'TimerStart'  ? styles.activeFooterTabLabel : ''
-              ]
-            }
-          >
-            Таймер
-          </Text>
-        </TouchableOpacity>
-      </View>
+            <Ionicons name="alarm" size={24} color="black" />  
+            <Text>
+              Переключить
+            </Text>
+          </TouchableOpacity>
+        </View>
+      }
     </View>
   )
 }
@@ -2609,238 +2687,240 @@ export function AddAlarmActivity({ navigation }) {
 
   return (
     <View>
-      <View style={styles.addAlarmTimeInput}>
-        <View style={styles.addAlarmTimeInputItem}>
-          <ScrollView
-            style={styles.addAlarmTimeInputItemScroll}
-            onScroll={(scroll) => {
-              const scrollEvent = scroll.nativeEvent
-              const offset = scrollEvent.contentOffset
-              const scrollOffset = offset.y
-              const correctScrollOffset = scrollOffset / 45
-              const repeatedHoursTimeLabelsIndex = Number.parseInt(correctScrollOffset)
-              const hoursTime = repeatedHoursTimeLabels[repeatedHoursTimeLabelsIndex]
-              setAlarmHoursTime(hoursTime)
-            }}
-            ref={(ref) => {
-              ref.scrollTo({
-                x: 0,
-                y: 2500,
-                animated: false
-              })
-            }}
-          >
-            {
-              repeatedHoursTimeLabels.map((timeLabel, timeLabelIndex) => {
-                return (
-                  <TouchableOpacity key={timeLabelIndex} onPress={() => {
-                    console.log('выбираю часы для Будильника')
-                    setAlarmHoursTime(timeLabel)
-                  }}>
-                    <Text style={
-                      [
-                        styles.addAlarmTimeInputItemLabel,
-                        alarmHoursTime === timeLabel ? '' : styles.alarmBluredTimeInputLabel 
-                      ]
-                    }>
-                      {
-                        timeLabel
-                      }
-                    </Text>
-                  </TouchableOpacity>
-                )
-              })
-            }
-          </ScrollView>
+      <ScrollView>
+        <View style={styles.addAlarmTimeInput}>
+          <View style={styles.addAlarmTimeInputItem}>
+            <ScrollView
+              style={styles.addAlarmTimeInputItemScroll}
+              onScroll={(scroll) => {
+                const scrollEvent = scroll.nativeEvent
+                const offset = scrollEvent.contentOffset
+                const scrollOffset = offset.y
+                const correctScrollOffset = scrollOffset / 45
+                const repeatedHoursTimeLabelsIndex = Number.parseInt(correctScrollOffset)
+                const hoursTime = repeatedHoursTimeLabels[repeatedHoursTimeLabelsIndex]
+                setAlarmHoursTime(hoursTime)
+              }}
+              ref={(ref) => {
+                ref.scrollTo({
+                  x: 0,
+                  y: 2500,
+                  animated: false
+                })
+              }}
+            >
+              {
+                repeatedHoursTimeLabels.map((timeLabel, timeLabelIndex) => {
+                  return (
+                    <TouchableOpacity key={timeLabelIndex} onPress={() => {
+                      console.log('выбираю часы для Будильника')
+                      setAlarmHoursTime(timeLabel)
+                    }}>
+                      <Text style={
+                        [
+                          styles.addAlarmTimeInputItemLabel,
+                          alarmHoursTime === timeLabel ? '' : styles.alarmBluredTimeInputLabel 
+                        ]
+                      }>
+                        {
+                          timeLabel
+                        }
+                      </Text>
+                    </TouchableOpacity>
+                  )
+                })
+              }
+            </ScrollView>
+          </View>
+          <View style={styles.addAlarmTimeInputItem}>
+            <ScrollView 
+              ref={(ref) => {
+                ref.scrollTo({
+                  x: 0,
+                  y: 7500,
+                  animated: false
+                })
+              }}
+              style={styles.addAlarmTimeInputItemScroll}
+              onScroll={(scroll) => {
+                const scrollEvent = scroll.nativeEvent
+                const offset = scrollEvent.contentOffset
+                const scrollOffset = offset.y
+                const correctScrollOffset = scrollOffset / 45
+                const repeatedMinutesTimeLabelsIndex = Number.parseInt(correctScrollOffset)
+                const minutesTime = repeatedMinutesTimeLabels[repeatedMinutesTimeLabelsIndex]
+                setAlarmMinutesTime(minutesTime)
+              }}
+            >
+              {
+                repeatedMinutesTimeLabels.map((timeLabel, timeLabelIndex) => {
+                  return (
+                    <TouchableOpacity key={timeLabelIndex} onPress={() => {
+                      console.log('выбираю минуты для Будильника')
+                      setAlarmMinutesTime(timeLabel)
+                    }}>
+                      <Text style={
+                        [
+                          styles.addAlarmTimeInputItemLabel,
+                          alarmMinutesTime === timeLabel ? '' : styles.alarmBluredTimeInputLabel 
+                        ]
+                      }>
+                        {
+                          timeLabel
+                        }
+                      </Text>
+                    </TouchableOpacity>
+                  )
+                })
+              }
+            </ScrollView>
+          </View>
         </View>
-        <View style={styles.addAlarmTimeInputItem}>
-          <ScrollView 
-            ref={(ref) => {
-              ref.scrollTo({
-                x: 0,
-                y: 7500,
-                animated: false
-              })
-            }}
-            style={styles.addAlarmTimeInputItemScroll}
-            onScroll={(scroll) => {
-              const scrollEvent = scroll.nativeEvent
-              const offset = scrollEvent.contentOffset
-              const scrollOffset = offset.y
-              const correctScrollOffset = scrollOffset / 45
-              const repeatedMinutesTimeLabelsIndex = Number.parseInt(correctScrollOffset)
-              const minutesTime = repeatedMinutesTimeLabels[repeatedMinutesTimeLabelsIndex]
-              setAlarmMinutesTime(minutesTime)
-            }}
-          >
-            {
-              repeatedMinutesTimeLabels.map((timeLabel, timeLabelIndex) => {
-                return (
-                  <TouchableOpacity key={timeLabelIndex} onPress={() => {
-                    console.log('выбираю минуты для Будильника')
-                    setAlarmMinutesTime(timeLabel)
-                  }}>
-                    <Text style={
-                      [
-                        styles.addAlarmTimeInputItemLabel,
-                        alarmMinutesTime === timeLabel ? '' : styles.alarmBluredTimeInputLabel 
-                      ]
-                    }>
-                      {
-                        timeLabel
-                      }
-                    </Text>
-                  </TouchableOpacity>
-                )
-              })
-            }
-          </ScrollView>
+        <View style={styles.addAlarmDateInput}>
+          <Text style={styles.addAlarmDateInputLabel}>
+            Завтра-чт, 22 ноя.
+          </Text>
+          <Entypo
+            name="calendar"
+            size={24}
+            color="black"
+            style={styles.addAlarmDateInputLabel}
+          />
         </View>
-      </View>
-      <View style={styles.addAlarmDateInput}>
-        <Text style={styles.addAlarmDateInputLabel}>
-          Завтра-чт, 22 ноя.
-        </Text>
-        <Entypo
-          name="calendar"
-          size={24}
-          color="black"
-          style={styles.addAlarmDateInputLabel}
-        />
-      </View>
-      <View style={styles.addAlarmWeek}>
-        <TouchableOpacity onPress={() => {
-          console.log('выбираю дату Будильника на понедельник на этой неделе')
-          setAlarm
-          setAlarmDate(getNextDay('monday'))
-        }}>
-          <Text style={styles.addAlarmWeekDay}>
-            Пн
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => {
-          console.log('выбираю дату Будильника на вторник на этой неделе')
-          setAlarmDate(getNextDay('tuesday'))
-        }}>
-          <Text style={styles.addAlarmWeekDay}>
-            Вт
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => {
-          console.log('выбираю дату Будильника на среду на этой неделе')
-          setAlarmDate(getNextDay('wednesday'))
-        }}>
-          <Text style={styles.addAlarmWeekDay}>
-            Ср
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => {
-          console.log('выбираю дату Будильника на четверг на этой неделе')
-          setAlarmDate(getNextDay('thursday'))
-        }}>
-          <Text style={styles.addAlarmWeekDay}>
-            Чт
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => {
-          console.log('выбираю дату Будильника на пятницу на этой неделе')
-          setAlarmDate(getNextDay('friday'))
-        }}>
-          <Text style={styles.addAlarmWeekDay}>
-            Пт
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => {
-          console.log('выбираю дату Будильника на субботу на этой неделе')
-          setAlarmDate(getNextDay('saturday'))
-        }}>
-          <Text style={styles.addAlarmWeekDay}>
-            Сб
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => {
-          console.log('выбираю дату Будильника на воскресенье на этой неделе')
-          setAlarmDate(getNextDay('sunday'))
-        }}>
-          <Text style={styles.addAlarmWeekDay, styles.addAlarmWeekHoliday}>
-            Вс
-          </Text>
-        </TouchableOpacity>
-      </View>
-      <TextInput style={styles.alarmSignalNameInput} placeholder="Имя сигнала" value={alarmSignalName} onChangeText={(value) => setAlarmSignalName(value)} />
-      <View style={styles.addAlarmOptions}>
-        <View style={styles.addAlarmOption}>
+        <View style={styles.addAlarmWeek}>
+          <TouchableOpacity onPress={() => {
+            console.log('выбираю дату Будильника на понедельник на этой неделе')
+            setAlarm
+            setAlarmDate(getNextDay('monday'))
+          }}>
+            <Text style={styles.addAlarmWeekDay}>
+              Пн
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => {
+            console.log('выбираю дату Будильника на вторник на этой неделе')
+            setAlarmDate(getNextDay('tuesday'))
+          }}>
+            <Text style={styles.addAlarmWeekDay}>
+              Вт
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => {
+            console.log('выбираю дату Будильника на среду на этой неделе')
+            setAlarmDate(getNextDay('wednesday'))
+          }}>
+            <Text style={styles.addAlarmWeekDay}>
+              Ср
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => {
+            console.log('выбираю дату Будильника на четверг на этой неделе')
+            setAlarmDate(getNextDay('thursday'))
+          }}>
+            <Text style={styles.addAlarmWeekDay}>
+              Чт
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => {
+            console.log('выбираю дату Будильника на пятницу на этой неделе')
+            setAlarmDate(getNextDay('friday'))
+          }}>
+            <Text style={styles.addAlarmWeekDay}>
+              Пт
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => {
+            console.log('выбираю дату Будильника на субботу на этой неделе')
+            setAlarmDate(getNextDay('saturday'))
+          }}>
+            <Text style={styles.addAlarmWeekDay}>
+              Сб
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => {
             console.log('выбираю дату Будильника на воскресенье на этой неделе')
+            setAlarmDate(getNextDay('sunday'))
           }}>
-            <View style={styles.addAlarmOptionAside}>
-              <Text style={styles.addAlarmOptionAsideHeaderLabel}>
-                Звук будильника
-              </Text>
-              <Text style={styles.addAlarmOptionAsideFooterLabel}>
-                Home coming
-              </Text>
-            </View>
+            <Text style={styles.addAlarmWeekDay, styles.addAlarmWeekHoliday}>
+              Вс
+            </Text>
           </TouchableOpacity>
-          <Switch style={styles.addAlarmOptionSwitch} />
         </View>
-        <View style={[styles.addAlarmOption, styles.addAlarmVibrationOption]}>
-          <TouchableOpacity onPress={() => {
-            console.log('выбираю дату Будильника на воскресенье на этой неделе')
+        <TextInput style={styles.alarmSignalNameInput} placeholder="Имя сигнала" value={alarmSignalName} onChangeText={(value) => setAlarmSignalName(value)} />
+        <View style={styles.addAlarmOptions}>
+          <View style={styles.addAlarmOption}>
+            <TouchableOpacity onPress={() => {
+              console.log('выбираю дату Будильника на воскресенье на этой неделе')
+            }}>
+              <View style={styles.addAlarmOptionAside}>
+                <Text style={styles.addAlarmOptionAsideHeaderLabel}>
+                  Звук будильника
+                </Text>
+                <Text style={styles.addAlarmOptionAsideFooterLabel}>
+                  Home coming
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <Switch style={styles.addAlarmOptionSwitch} />
+          </View>
+          <View style={[styles.addAlarmOption, styles.addAlarmVibrationOption]}>
+            <TouchableOpacity onPress={() => {
+              console.log('выбираю дату Будильника на воскресенье на этой неделе')
+            }}>
+              <View style={styles.addAlarmOptionAside}>
+                <Text style={styles.addAlarmOptionAsideHeaderLabel}>
+                  Вибрация
+                </Text>
+                <Text style={styles.addAlarmOptionAsideFooterLabel}>
+                  Basic call
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <Switch style={styles.addAlarmOptionSwitch} />
+          </View>
+          <View style={styles.addAlarmOption}>
+            <TouchableOpacity onPress={() => {
+              console.log('выбираю дату Будильника на воскресенье на этой неделе')
+            }}>
+              <View style={styles.addAlarmOptionAside}>
+                <Text style={styles.addAlarmOptionAsideHeaderLabel}>
+                  Пауза
+                </Text>
+                <Text style={styles.addAlarmOptionAsideFooterLabel}>
+                  5 минут, 3 раза
+                </Text>  
+              </View>
+            </TouchableOpacity>
+            <Switch style={styles.addAlarmOptionSwitch} />
+          </View>
+        </View>
+        <View style={styles.addAlarmFooter}>
+          <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
+            console.log('отменяю создание Будильник')
+            navigation.navigate('MainActivity')
           }}>
-            <View style={styles.addAlarmOptionAside}>
-              <Text style={styles.addAlarmOptionAsideHeaderLabel}>
-                Вибрация
-              </Text>
-              <Text style={styles.addAlarmOptionAsideFooterLabel}>
-                Basic call
-              </Text>
-            </View>
+            <Text style={styles.addAlarmFooterLabel}>
+              Отмена
+            </Text>
           </TouchableOpacity>
-          <Switch style={styles.addAlarmOptionSwitch} />
-        </View>
-        <View style={styles.addAlarmOption}>
-          <TouchableOpacity onPress={() => {
-            console.log('выбираю дату Будильника на воскресенье на этой неделе')
-          }}>
-            <View style={styles.addAlarmOptionAside}>
-              <Text style={styles.addAlarmOptionAsideHeaderLabel}>
-                Пауза
-              </Text>
-              <Text style={styles.addAlarmOptionAsideFooterLabel}>
-                5 минут, 3 раза
-              </Text>  
-            </View>
-          </TouchableOpacity>
-          <Switch style={styles.addAlarmOptionSwitch} />
-        </View>
-      </View>
-      <View style={styles.addAlarmFooter}>
-        <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
-          console.log('отменяю создание Будильник')
-          navigation.navigate('MainActivity')
-        }}>
-          <Text style={styles.addAlarmFooterLabel}>
-            Отмена
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
-          console.log('создаю Будильник')
-          const alarmTime = `${alarmHoursTime}:${alarmMinutesTime}` 
-          let sqlStatement = `INSERT INTO \"alarms\"(time, date, isEnabled) VALUES (\"${alarmTime}\",\"${alarmDate}\", true);`
-          db.transaction(transaction => {
-            transaction.executeSql(sqlStatement, [], (tx, receivedContacts) => {
-              
-            }, (tx) => {
-              console.log("ошибка получения аватарки")
+          <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
+            console.log('создаю Будильник')
+            const alarmTime = `${alarmHoursTime}:${alarmMinutesTime}` 
+            let sqlStatement = `INSERT INTO \"alarms\"(time, date, isEnabled) VALUES (\"${alarmTime}\",\"${alarmDate}\", true);`
+            db.transaction(transaction => {
+              transaction.executeSql(sqlStatement, [], (tx, receivedContacts) => {
+                navigation.navigate('MainActivity')
+              }, (tx) => {
+                console.log("ошибка получения аватарки")
+              })
             })
-          })
-        }}>
-          <Text style={styles.addAlarmFooterLabel}>
-            Продолжить
-          </Text>
-          </TouchableOpacity>
-      </View>
+          }}>
+            <Text style={styles.addAlarmFooterLabel}>
+              Продолжить
+            </Text>
+            </TouchableOpacity>
+        </View>
+      </ScrollView>
     </View>
   )
 }
@@ -3092,6 +3172,7 @@ const styles = StyleSheet.create({
   addAlarmOptions: {
     borderRadius: 20,
     overflow: 'hidden'
+    // height: 250
   },
   addAlarmOption: {
     backgroundColor: 'rgb(255, 255, 255)',
@@ -3220,5 +3301,15 @@ const styles = StyleSheet.create({
     height: 35,
     marginVertical: 35,
     marginHorizontal: 50
+  },
+  selectionFooter: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-around'
+  },
+  selectionFooterItem: {
+    height: 200,
+    display: 'flex',
+    alignItems: 'center'
   }
 })
