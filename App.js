@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Switch, Button, Alert, BackHandler } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Switch, Button, Alert, BackHandler, CheckBox } from 'react-native'
 import { Feather } from '@expo/vector-icons'
 import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
@@ -11,8 +11,7 @@ import {
   Paragraph,
   Dialog,
   Portal,
-  Provider,
-  Checkbox,
+  Provider
 } from 'react-native-paper'
 
 var db = null
@@ -945,6 +944,10 @@ export function MainActivity({ navigation }) {
   
   const [alarmsTogglers, setAlarmsTogglers] = useState([])
 
+  const [alarmsCheckboxes, setAlarmsCheckboxes] = useState([])
+
+  const [citiesCheckboxes, setCitiesCheckboxes] = useState([])
+
   const [stopWatchTimer, setStopWatchTimer] = useState(null)
   
   const [stopWatchIntervalTimer, setStopWatchIntervalTimer] = useState(null)
@@ -1159,7 +1162,7 @@ export function MainActivity({ navigation }) {
                 alarms.length >= 1 ?
                   alarms.map((alarm, alarmIndex) => {
                     return (
-                      <TouchableOpacity
+                      <View
                         style={styles.alarm} key={alarmIndex}
                         onPress={() => {
                           console.log('создаю Будильник')
@@ -1167,15 +1170,19 @@ export function MainActivity({ navigation }) {
                         }}
                         onLongPress={() => {
                           console.log('создаю дополнительное меню Будильника')
+                          /*
+                            пока выделение не получется
+                            alarmsCheckboxes[alarmIndex] = true
+                          */
                           setIsSelection(true)
                         }}
                       >
                         {
                           isSelection ?
-                            <Checkbox
-                              value={true}
+                            <CheckBox
+                              value={alarmsCheckboxes[alarmIndex]}
                               onValueChange={() => {
-                                return false
+                                alarmsCheckboxes[alarmIndex] = !alarmsCheckboxes[alarmIndex]
                               }}  
                             />
                           :
@@ -1183,11 +1190,23 @@ export function MainActivity({ navigation }) {
                             
                           </View>
                         }
-                        <Text style={styles.alarmTime}>
-                          {
-                            alarm.time
-                          }
-                        </Text>
+                        <TouchableOpacity
+                          style={styles.alarm} key={alarmIndex}
+                          onPress={() => {
+                            console.log('создаю Будильник')
+                            navigation.navigate('AddAlarmActivity')
+                          }}
+                          onLongPress={() => {
+                            console.log('создаю дополнительное меню Будильника')
+                            setIsSelection(true)
+                          }}
+                        >
+                          <Text style={styles.alarmTime}>
+                            {
+                              alarm.time
+                            }
+                          </Text>
+                        </TouchableOpacity>
                         <View style={styles.alarmAside}>
                           <Text style={styles.alarmDate}>
                             вт, 25 янв.
@@ -1200,7 +1219,7 @@ export function MainActivity({ navigation }) {
                             value={alarmsTogglers[alarmIndex]}
                           />
                         </View>
-                      </TouchableOpacity>
+                      </View>
                     )
                   })
                 :
@@ -1243,7 +1262,7 @@ export function MainActivity({ navigation }) {
                 cities.length >= 1 ?
                 cities.map((city, cityIndex) => {
                     return (
-                      <TouchableOpacity
+                      <View
                         style={styles.alarm}
                         key={cityIndex}
                         onPress={() => {
@@ -1259,10 +1278,10 @@ export function MainActivity({ navigation }) {
                       >
                         {
                           isSelection ?
-                            <Checkbox
-                              value={true}
+                            <CheckBox
+                              value={citiesCheckboxes[cityIndex]}
                               onValueChange={() => {
-                                return false
+                                citiesCheckboxes[cityIndex] = !citiesCheckboxes[cityIndex]
                               }}  
                             />
                           :
@@ -1270,22 +1289,37 @@ export function MainActivity({ navigation }) {
                             
                           </View>
                         }
-                        <View>
-                          <Text style={styles.cityName}>
-                            {
-                              city.name
-                            }
-                          </Text>
-                          <Text style={styles.alarmDate}>
-                            На 5 ч. позже
-                          </Text>
-                        </View>
+                        <TouchableOpacity
+                          style={styles.alarm}
+                          key={cityIndex}
+                          onPress={() => {
+                            navigation.navigate('AddWorldTimeActivity', {
+                              action: 'change',
+                              id: city.id
+                            })
+                          }}
+                          onLongPress={() => {
+                            console.log('создаю дополнительное меню города')
+                            setIsSelection(true)
+                          }}
+                        >
+                          <View>
+                            <Text style={styles.cityName}>
+                              {
+                                city.name
+                              }
+                            </Text>
+                            <Text style={styles.alarmDate}>
+                              На 5 ч. позже
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
                         <Text style={styles.alarmTime}>
                           {
                             city.time
                           }
                         </Text>
-                      </TouchableOpacity>
+                      </View>
                     )
                   })
                 :
@@ -2192,7 +2226,29 @@ export function MainActivity({ navigation }) {
           <TouchableOpacity
             style={styles.selectionFooterItem}
             onPress={() => {
-
+              const isAlarmActivity = currentTab == 'Будильник'
+              const isWorldTimeActivity = currentTab == 'Мировое время'
+              if (isAlarmActivity) {
+                alarmsCheckboxes.map((alarmsCheckbox, alarmsCheckboxIndex) => {
+                  // здесь
+                  db.transaction(transaction => {
+                    const sqlStatement = "DELETE * FROM alarms WHERE _id=0;"
+                    transaction.executeSql(sqlStatement, [], (tx, receivedAlarms) => {
+                      // удаляем виджеты
+                    })
+                  })
+                })
+              } else if (isWorldTimeActivity) {
+                citiesCheckboxes.map((citiesCheckbox, citiesCheckboxIndex) => {
+                  // здесь
+                  db.transaction(transaction => {
+                    const sqlStatement = "DELETE * FROM cities WHERE _id=0;"
+                    transaction.executeSql(sqlStatement, [], (tx, receivedCities) => {
+                      // удаляем виджеты
+                    })
+                  })
+                })
+              }
             }}
           >
             <MaterialIcons name="delete" size={24} color="black" />
@@ -2203,7 +2259,16 @@ export function MainActivity({ navigation }) {
           <TouchableOpacity
             style={styles.selectionFooterItem}
             onPress={() => {
-
+              // здесь
+              const isAlarmActivity = currentTab == 'Будильник'
+              if (isAlarmActivity) {
+                db.transaction(transaction => {
+                  let sqlStatement = `UPDATE alarms SET isEnabled=${1} WHERE _id=${0};`
+                  transaction.executeSql(sqlStatement, [], (tx, receivedAlarms) => {
+                    // удаляем виджеты
+                  })
+                })
+              }
             }}
           >
             <Ionicons name="alarm" size={24} color="black" />  
