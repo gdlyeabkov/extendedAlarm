@@ -807,6 +807,9 @@ export function MainActivity({ navigation }) {
     }    
   ]
   initialAlarms = []
+  
+  const [alarmsTogglers, setAlarmsTogglers] = useState([])
+  
   const [alarms, setAlarms] = useState(initialAlarms)
 
   let initialCities = [
@@ -893,7 +896,6 @@ export function MainActivity({ navigation }) {
             isEnabled: alarm[4],
           }
         ]
-
       })
       setAlarms(tempReceivedAlarms)
     })
@@ -942,8 +944,6 @@ export function MainActivity({ navigation }) {
 
   const [timersTogglers, setTimersTogglers] = useState([])
   
-  const [alarmsTogglers, setAlarmsTogglers] = useState([])
-
   const [alarmsCheckboxes, setAlarmsCheckboxes] = useState([])
 
   const [citiesCheckboxes, setCitiesCheckboxes] = useState([])
@@ -991,7 +991,7 @@ export function MainActivity({ navigation }) {
   const [startedTimerSecondsTime, setStartedTimerSecondsTime] = useState('00')
 
   const [isSelection, setIsSelection] = useState(false)
-
+  
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', function () {
       const isAlarmsActivity = currentTab == 'Будильник'
@@ -1002,7 +1002,7 @@ export function MainActivity({ navigation }) {
         return true;
       }
       return false;
-    });
+    })
   }, [])
 
   const startStopWatchTimer = () => {
@@ -2232,9 +2232,17 @@ export function MainActivity({ navigation }) {
                 alarmsCheckboxes.map((alarmsCheckbox, alarmsCheckboxIndex) => {
                   // здесь
                   db.transaction(transaction => {
-                    const sqlStatement = "DELETE * FROM alarms WHERE _id=0;"
+                    const alarmId = alarms[alarmsCheckboxIndex].id
+                    const sqlStatement = `DELETE FROM alarms WHERE _id=${alarmId};`
                     transaction.executeSql(sqlStatement, [], (tx, receivedAlarms) => {
                       // удаляем виджеты
+                      const updatedAlarms = alarms.filter((alarm, alarmIndex) => {
+                        // return alarmIndex !== alarmsCheckboxIndex
+                        return alarm.id !== alarmId
+                      })
+                      setAlarms(updatedAlarms)
+                      setAlarmsCheckboxes([])
+                      setIsSelection(false)
                     })
                   })
                 })
@@ -2242,9 +2250,16 @@ export function MainActivity({ navigation }) {
                 citiesCheckboxes.map((citiesCheckbox, citiesCheckboxIndex) => {
                   // здесь
                   db.transaction(transaction => {
-                    const sqlStatement = "DELETE * FROM cities WHERE _id=0;"
+                    const cityId = cities[citiesCheckboxIndex].id
+                    const sqlStatement = `DELETE FROM cities WHERE _id=${cityId};`
                     transaction.executeSql(sqlStatement, [], (tx, receivedCities) => {
                       // удаляем виджеты
+                      const updatedCities = cities.filter((alarm, alarmIndex) => {
+                        return city.id !== cityId
+                      })
+                      setCities(updatedCities)
+                      setCitiesCheckboxes([])
+                      setIsSelection(false)
                     })
                   })
                 })
@@ -2256,26 +2271,41 @@ export function MainActivity({ navigation }) {
               Удалить
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.selectionFooterItem}
-            onPress={() => {
-              // здесь
-              const isAlarmActivity = currentTab == 'Будильник'
-              if (isAlarmActivity) {
-                db.transaction(transaction => {
-                  let sqlStatement = `UPDATE alarms SET isEnabled=${1} WHERE _id=${0};`
-                  transaction.executeSql(sqlStatement, [], (tx, receivedAlarms) => {
-                    // удаляем виджеты
-                  })
-                })
-              }
-            }}
-          >
-            <Ionicons name="alarm" size={24} color="black" />  
-            <Text>
-              Переключить
-            </Text>
-          </TouchableOpacity>
+          {
+            currentTab == 'Будильник' ?
+              <TouchableOpacity
+                style={styles.selectionFooterItem}
+                onPress={() => {
+                  const isAlarmActivity = currentTab == 'Будильник'
+                  if (isAlarmActivity) {
+                    alarmsCheckboxes.map((alarmCheckbox, alarmCheckboxIndex) => {
+                      db.transaction(transaction => {
+                        const alarmId = alarms[alarmCheckboxIndex].id
+                        const alarmIsEnabled = !alarmsTogglers[alarmCheckboxIndex]
+                        let sqlStatement = `UPDATE alarms SET isEnabled=${alarmIsEnabled} WHERE _id=${alarmId};`
+                        transaction.executeSql(sqlStatement, [], (tx, receivedAlarms) => {
+                          // переключаем виджеты
+                          const updatedAlarmsTogglers = alarmsTogglers
+                          updatedAlarmsTogglers[alarmCheckboxIndex] = !updatedAlarmsTogglers[alarmCheckboxIndex] 
+                          setAlarmsTogglers(updatedAlarmsTogglers)
+                          setAlarmsCheckboxes([])
+                          setIsSelection(false)
+                        })
+                      })
+                    })
+                  }
+                }}
+              >
+                <Ionicons name="alarm" size={24} color="black" />  
+                <Text>
+                  Переключить
+                </Text>
+              </TouchableOpacity>
+            :
+              <View>
+              
+              </View>
+          }
         </View>
       }
     </View>
