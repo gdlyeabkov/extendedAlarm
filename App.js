@@ -13,6 +13,7 @@ import {
   Portal,
   Provider
 } from 'react-native-paper'
+import DateTimePicker from '@react-native-community/datetimepicker'
 
 var db = null
 
@@ -892,8 +893,8 @@ export function MainActivity({ navigation }) {
             id: alarm[0],
             name: '',
             time: alarm[1],
-            date: alarm[3],
-            isEnabled: alarm[4],
+            date: alarm[2],
+            isEnabled: alarm[3],
           }
         ]
       })
@@ -1209,7 +1210,9 @@ export function MainActivity({ navigation }) {
                         </TouchableOpacity>
                         <View style={styles.alarmAside}>
                           <Text style={styles.alarmDate}>
-                            вт, 25 янв.
+                            {
+                              alarm.date
+                            }
                           </Text>
                           <Switch
                             onValueChange={() => {
@@ -2746,6 +2749,22 @@ export function AddAlarmActivity({ navigation }) {
     '59'
   ])
 
+  const [date, setDate] = useState(new Date(1598051730000))
+  const [mode, setMode] = useState('date')
+  const [isShowDatePicker, setIsShowDatePicker] = useState(false)
+
+  const onChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date
+    setIsShowDatePicker(Platform.OS === 'ios')
+    setDate(currentDate)
+    setAlarmDate(currentDate.toLocaleDateString())
+  }
+
+  const showMode = (currentMode) => {
+    setIsShowDatePicker(true)
+    setMode(currentMode)
+  }
+
   const getTimeLabel = (rawTime) => {
     const isEditTime = rawTime <= 9
     if (isEditTime) {
@@ -2875,12 +2894,16 @@ export function AddAlarmActivity({ navigation }) {
           <Text style={styles.addAlarmDateInputLabel}>
             Завтра-чт, 22 ноя.
           </Text>
-          <Entypo
-            name="calendar"
-            size={24}
-            color="black"
-            style={styles.addAlarmDateInputLabel}
-          />
+          <TouchableOpacity
+            onPress={() => setIsShowDatePicker(true)}
+          >
+            <Entypo
+              name="calendar"
+              size={24}
+              color="black"
+              style={styles.addAlarmDateInputLabel}
+            />
+          </TouchableOpacity>
         </View>
         <View style={styles.addAlarmWeek}>
           <TouchableOpacity onPress={() => {
@@ -3016,6 +3039,16 @@ export function AddAlarmActivity({ navigation }) {
             </TouchableOpacity>
         </View>
       </ScrollView>
+      {isShowDatePicker && (
+        <DateTimePicker
+          testID="dateTimePicker"
+          value={date}
+          mode={mode}
+          is24Hour={true}
+          display="default"
+          onChange={onChange}
+        />
+      )}
     </View>
   )
 }
@@ -3132,23 +3165,27 @@ const styles = StyleSheet.create({
   alarm: {
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    // justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     alignItems: 'center',
-    width: '90%',
+    width: '100%',
     marginHorizontal: 'auto',
     height: 100,
     backgroundColor: 'rgb(255, 255, 255)',
     borderRadius: 8,
     marginVertical: 15,
     // boxSizing: 'border-box',
-    paddingHorizontal: 50
+    paddingRight: 90,
+    paddingLeft: 50
   },
   alarmDate: {
-    marginHorizontal: 25
+    // marginHorizontal: 25,
+    // marginRight: 500,
   },
   alarmAside: {
     display: 'flex',
-    flexDirection: 'row'
+    flexDirection: 'column',
+    // marginLeft: 750
   },
   alarmTime: {
     fontSize: 36
