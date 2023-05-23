@@ -1115,9 +1115,6 @@ export function MainActivity({ navigation }) {
         setStartTimerTitle(currentTime)
         lastStartedTimerTitle = currentTime
       
-        // const isTimerOver = seconds <= 0 && hours <= 0 && minutes <= 0
-        // const isTimerOver = hours < 0
-        // const isTimerOver = lastStartedTimerTitle === '00:00:00'
         const isTimerOver = false
         if (isTimerOver) {
           resetStartedTimer()
@@ -1166,15 +1163,11 @@ export function MainActivity({ navigation }) {
                       <View
                         style={styles.alarm} key={alarmIndex}
                         onPress={() => {
-                          console.log('создаю Будильник')
+                          // создаю Будильник
                           navigation.navigate('AddAlarmActivity')
                         }}
                         onLongPress={() => {
-                          console.log('создаю дополнительное меню Будильника')
-                          /*
-                            пока выделение не получется
-                            alarmsCheckboxes[alarmIndex] = true
-                          */
+                          // создаю дополнительное меню Будильника
                           setIsSelection(true)
                         }}
                       >
@@ -2233,14 +2226,12 @@ export function MainActivity({ navigation }) {
               const isWorldTimeActivity = currentTab == 'Мировое время'
               if (isAlarmActivity) {
                 alarmsCheckboxes.map((alarmsCheckbox, alarmsCheckboxIndex) => {
-                  // здесь
                   db.transaction(transaction => {
                     const alarmId = alarms[alarmsCheckboxIndex].id
                     const sqlStatement = `DELETE FROM alarms WHERE _id=${alarmId};`
                     transaction.executeSql(sqlStatement, [], (tx, receivedAlarms) => {
                       // удаляем виджеты
                       const updatedAlarms = alarms.filter((alarm, alarmIndex) => {
-                        // return alarmIndex !== alarmsCheckboxIndex
                         return alarm.id !== alarmId
                       })
                       setAlarms(updatedAlarms)
@@ -2251,7 +2242,6 @@ export function MainActivity({ navigation }) {
                 })
               } else if (isWorldTimeActivity) {
                 citiesCheckboxes.map((citiesCheckbox, citiesCheckboxIndex) => {
-                  // здесь
                   db.transaction(transaction => {
                     const cityId = cities[citiesCheckboxIndex].id
                     const sqlStatement = `DELETE FROM cities WHERE _id=${cityId};`
@@ -3140,8 +3130,7 @@ const styles = StyleSheet.create({
   },
   activeFooterTabLabel: {
     fontWeight: '700',
-    textDecorationLine: 'underline',
-    // textUnderlineOffset: 5
+    textDecorationLine: 'underline'
   },
   alarmsTabTitle: {
     fontWeight: '500',
@@ -3165,7 +3154,6 @@ const styles = StyleSheet.create({
   alarm: {
     display: 'flex',
     flexDirection: 'row',
-    // justifyContent: 'space-between',
     justifyContent: 'flex-start',
     alignItems: 'center',
     width: '100%',
@@ -3174,18 +3162,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgb(255, 255, 255)',
     borderRadius: 8,
     marginVertical: 15,
-    // boxSizing: 'border-box',
     paddingRight: 90,
     paddingLeft: 50
   },
-  alarmDate: {
-    // marginHorizontal: 25,
-    // marginRight: 500,
-  },
   alarmAside: {
     display: 'flex',
-    flexDirection: 'column',
-    // marginLeft: 750
+    flexDirection: 'column'
   },
   alarmTime: {
     fontSize: 36
@@ -3304,7 +3286,6 @@ const styles = StyleSheet.create({
   addAlarmOptions: {
     borderRadius: 20,
     overflow: 'hidden'
-    // height: 250
   },
   addAlarmOption: {
     backgroundColor: 'rgb(255, 255, 255)',
@@ -3381,7 +3362,6 @@ const styles = StyleSheet.create({
     width: 350,
     height: 350,
     marginVertical: 50,
-    // borderRadius: '100%'
     borderRadius: 1000
   },
   startTimerLabelContainer: {
@@ -3396,7 +3376,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 185,
     height: 185,
-    // borderRadius: '100%',
     borderRadius: 1000,
     marginHorizontal: 15
   },
