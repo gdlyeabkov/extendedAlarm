@@ -39,12 +39,24 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName={ testActivity }>
-        <Stack.Screen name="MainActivity" component={ MainActivity } />
-        <Stack.Screen name="AddAlarmActivity" component={ AddAlarmActivity } />
+        <Stack.Screen
+          name="MainActivity"
+          component={ MainActivity }
+          options={{
+            title: ''
+          }} />
+        <Stack.Screen
+          name="AddAlarmActivity"
+          component={ AddAlarmActivity }
+          options={{
+            title: ''
+          }} />
         <Stack.Screen
           name="AddWorldTimeActivity"
           component={ AddWorldTimeActivity }
-        />
+          options={{
+            title: ''
+          }} />
       </Stack.Navigator>
     </NavigationContainer>
   )
@@ -846,7 +858,6 @@ export function MainActivity({ navigation }) {
   const startColorBtn = 'rgb(0, 0, 255)'
   const resumeBtnLabel = 'Продолжить'
   const [isIntervalBtnDisabled, setIsIntervalBtnDisabled] = useState(true)
-  const intervalBtnLabel = 'Интервал'
   const [intervalBtnContent, setIntervalBtnContent] = useState('Интервал')
   const [intervals, setIntervals] = useState([]) 
   const [startTimerTitle, setStartTimerTitle] = useState('00:00:00')
@@ -1079,7 +1090,6 @@ export function MainActivity({ navigation }) {
         let hours = Number(rawHours)
         let minutes = Number(rawMinutes)
         let seconds = Number(rawSeconds)
-        console.log(`hours: ${hours}, minutes: ${minutes}, seconds: ${seconds}; ${startedTimerHoursTime}:${startedTimerMinutesTime}:${startedTimerSecondsTime}`)
         if (minutes >= 0) {
           seconds = seconds - 1
         }
@@ -1134,6 +1144,16 @@ export function MainActivity({ navigation }) {
     setStartedTimer(null)
   }
 
+  const getIntervalWrapStyle = () => {
+    let isHide = true
+    if (intervals) {
+      isHide = intervals.length <= 0
+    }
+    return {
+      display: isHide ? 'hidden' : 'block'
+    }
+  }
+
   return (
     <View style={styles.backDrop}>
       {
@@ -1144,13 +1164,13 @@ export function MainActivity({ navigation }) {
             </Text>
             <View style={styles.alarmsTabBtns}>
               <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
-                console.log('создаю Будильник')
+                // создаю Будильник
                 navigation.navigate('AddAlarmActivity')
               }}>
                 <Feather style={styles.alarmsTabBtn} name="plus" size={24} color="black" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
-                console.log('открываю контекстное меню Будильников')
+                // открываю контекстное меню Будильников
               }}>
                 <Feather style={styles.alarmsTabBtn} name="more-vertical" size={24} color="black" />
               </TouchableOpacity>
@@ -1187,11 +1207,11 @@ export function MainActivity({ navigation }) {
                         <TouchableOpacity
                           style={styles.alarm} key={alarmIndex}
                           onPress={() => {
-                            console.log('создаю Будильник')
+                            // создаю Будильник
                             navigation.navigate('AddAlarmActivity')
                           }}
                           onLongPress={() => {
-                            console.log('создаю дополнительное меню Будильника')
+                            // создаю дополнительное меню Будильника
                             setIsSelection(true)
                           }}
                         >
@@ -1210,7 +1230,6 @@ export function MainActivity({ navigation }) {
                           <Switch
                             onValueChange={() => {
                               alarmsTogglers[alarmIndex] = !alarmsTogglers[alarmIndex]
-                              console.log(alarmsTogglers)
                             }}
                             value={alarmsTogglers[alarmIndex]}
                           />
@@ -1239,7 +1258,7 @@ export function MainActivity({ navigation }) {
             </View>
             <View style={styles.alarmsTabBtns}>
               <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
-                console.log('создаю Будильник')
+                // создаю Будильник
                 navigation.navigate('AddWorldTimeActivity', {
                   action: 'add',
                   id: 0
@@ -1248,7 +1267,7 @@ export function MainActivity({ navigation }) {
                 <Feather style={styles.alarmsTabBtn} name="plus" size={24} color="black" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
-                console.log('открываю контекстное меню Будильников')
+                // открываю контекстное меню Будильников
               }}>
                 <Feather style={styles.alarmsTabBtn} name="more-vertical" size={24} color="black" />
               </TouchableOpacity>
@@ -1268,7 +1287,7 @@ export function MainActivity({ navigation }) {
                           })
                         }}
                         onLongPress={() => {
-                          console.log('создаю дополнительное меню города')
+                          // создаю дополнительное меню города
                           setIsSelection(true)
                         }}
                       >
@@ -1295,7 +1314,7 @@ export function MainActivity({ navigation }) {
                             })
                           }}
                           onLongPress={() => {
-                            console.log('создаю дополнительное меню города')
+                            // создаю дополнительное меню города
                             setIsSelection(true)
                           }}
                         >
@@ -1328,827 +1347,624 @@ export function MainActivity({ navigation }) {
             </ScrollView>
           </View>
         : currentTab == 'Секундомер' ?
-        <View>
-          <View style={styles.alarmsTabBtns}>
-            <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
-              console.log('открываю контекстное меню Будильников')
-            }}>
-              <Feather style={styles.alarmsTabBtn} name="more-vertical" size={24} color="black" />
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.stopwatchTitle}>
-            {
-              title
-            }
-          </Text>
-          <View style={{
-            display: intervals.length <= 0 ? 'none' : 'block'
-          }}>
-            <View style={styles.intervalsItem}>
-              <Text style={styles.intervalsItemLabel}>
-                Круг
-              </Text>
-              <Text style={styles.intervalsItemLabel}>
-                Время круга
-              </Text>
-              <Text style={styles.intervalsItemLabel}>
-                Общее время
-              </Text>
+          <ScrollView style={{maxHeight: '90%'}}>
+            <View style={styles.alarmsTabBtns}>
+              <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
+                // открываю контекстное меню Будильников
+              }}>
+                <Feather style={styles.alarmsTabBtn} name="more-vertical" size={24} color="black" />
+              </TouchableOpacity>
             </View>
-            {
-              intervals.map((interval, intervalIndex) => {
-                return (
-                  <View key={intervalIndex} style={styles.intervalsItem}>
-                    <Text style={styles.intervalsItemLabel}>
-                      {
-                        interval.circle
-                      }
-                    </Text>
-                    <Text style={styles.intervalsItemLabel}>
-                      {
-                        interval.circleTime
-                      }
-                    </Text>
-                    <Text style={styles.intervalsItemLabel}>
-                      {
-                        interval.totalTime
-                      }
-                    </Text>
-                  </View>
-                )
-              })
-            }
-          </View>
-          <View style={styles.stopwatchBtns}>
-            <View  style={styles.stopwatchBtn}>
-              <Button
-                title="Интервал"
-                style={styles.stopwatchIntervalBtn}
-                color={'rgb(200, 200, 200)'}
-                disabled={isIntervalBtnDisabled}
-                onPress={() => {
-                  const circlesCount = intervals.length + 1
-                  let circleLabelContent = circlesCount.toString() 
-                  const isCirclesTop9 = circlesCount <= 9
-                  if (isCirclesTop9) {
-                    circleLabelContent = oneCharPrefix + circleLabelContent
-                  }
-                  
-                  let parsedCircleSeconds = circleSeconds.toString()
-                  const countSecondsChars = parsedCircleSeconds.length
-                  const isAddSecondsPrefix = countSecondsChars === 1
-                  if (isAddSecondsPrefix) {
-                    parsedCircleSeconds = oneCharPrefix + parsedCircleSeconds
-                  }
-                  let parsedCircleMinutes = circleMinutes.toString()
-                  const countMinutesChars = parsedCircleMinutes.length
-                  const isAddMinutesPrefix = countMinutesChars === 1
-                  if (isAddMinutesPrefix) {
-                    parsedCircleMinutes = oneCharPrefix + parsedCircleMinutes
-                  }
-                  let parsedCircleHours = circleHours.toString()
-                  const countHoursChars = parsedCircleHours.length
-                  const isAddHoursPrefix = countHoursChars == 1
-                  if (isAddHoursPrefix) {
-                    parsedCircleHours = oneCharPrefix + parsedCircleHours
-                  }
-                  
-                  const circlTimeLabel = parsedCircleHours + timePartsSeparator + parsedCircleMinutes + timePartsSeparator + parsedCircleSeconds
-                  const interval = {
-                    circle: circleLabelContent,
-                    circleTime: circlTimeLabel,
-                    totalTime: title
-                  }
-                  setIntervals([
-                    interval,
-                    ...intervals
-                  ])
-                  if (stopWatchIntervalTimer !== null) {
-                    clearInterval(stopWatchIntervalTimer)
-                    setStopWatchIntervalTimer(null)
-                    setCircleHours(0)
-                    setCircleMinutes(0)
-                    setCircleSeconds(0)  
-                  }
-                  let newCircleHours = 0
-                  let newCircleMinutes = 0
-                  let newCircleSeconds = 0
-                  setStopWatchIntervalTimer(
-                    setInterval(() => {
-                      
-                      newCircleSeconds++
-                      setCircleSeconds(newCircleSeconds)
-                      const isToggleSecond = circleSeconds === countSecondsInMinute
-                      if (isToggleSecond) {
-                        newCircleSeconds = initialSeconds
-                        setCircleSeconds(newCircleSeconds)
-                        newCircleMinutes++
-                        setCircleMinutes(newCircleMinutes)
-                        const isToggleHour = circleMinutes === countMinutesInHour
-                        if (isToggleHour) {
-                          newCircleMinutes = initialMinutes
-                          setCircleMinutes(newCircleMinutes)
-                          newCircleHours++
-                          setCircleHours(newCircleHours)
-                        }
-                      }
-                      
-                    }, millisecondsInSecond)
-                  )
-                }}
-              />
-            </View>
-            <View  style={styles.stopwatchBtn}>
-              <Button onPress={() => {
-                startStopWatchTimer()
-              }} color={startBtnBackgroundColor} title={startBtnContent} />
-            </View>
-          </View>
-        </View>
-        : currentTab == 'Таймер' ?
-        <View>
-          <View style={styles.alarmsTabBtns}>
-            <TouchableOpacity
-              style={styles.footerTabLabel}
-              onPress={() => {
-                setIsDialogVisible(true)
-              }}
-            >
-              <Feather style={styles.alarmsTabBtn} name="plus" size={24} color="black" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
-              console.log('открываю контекстное меню Таймера')
-            }}>
-              <Feather style={styles.alarmsTabBtn} name="more-vertical" size={24} color="black" />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.timerTable}>
-            <ScrollView
-              style={styles.timerTableItem}
-              ref={(ref) => {
-                setStartedTimerInitialHoursScroll(ref)
-              }}
-              onScroll={(ref) => {
-                const event = ref.nativeEvent
-                const offset = event.contentOffset
-                const verticalOffset = offset.y
-                const correctScrollOffset = verticalOffset / 45
-                const repeatedHoursTimeLabelsIndex = Number.parseInt(correctScrollOffset)
-                const hoursTime = repeatedHoursTimeLabels[repeatedHoursTimeLabelsIndex]
-                setStartedTimerHoursTime(hoursTime)
-                console.log(`verticalOffset: ${verticalOffset}; hoursTime: ${hoursTime}`)
-              }}
-            >
-              <Text style={styles.timerTableItemHeader}>
-                ч.
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                00
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                01
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                02
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                03
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                04
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                05
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                06
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                07
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                08
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                09
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                10
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                11
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                12
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                13
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                14
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                15
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                16
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                17
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                18
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                19
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                20
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                21
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                22
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                23
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                24
-              </Text>
-            </ScrollView>
-            <ScrollView
-              style={styles.timerTableItem}
-              ref={(ref) => {
-                setStartedTimerInitialMinutesScroll(ref)
-              }}
-              onScroll={(ref) => {
-                const event = ref.nativeEvent
-                const offset = event.contentOffset
-                const verticalOffset = offset.y
-                const correctScrollOffset = verticalOffset / 45
-                const repeatedMinutesTimeLabelsIndex = Number.parseInt(correctScrollOffset)
-                const minutesTime = repeatedMinutesTimeLabels[repeatedMinutesTimeLabelsIndex]
-                setStartedTimerMinutesTime(minutesTime)
-                console.log(`verticalOffset: ${verticalOffset}; minutesTime: ${minutesTime}`)
-              }}
-            >
-              <Text style={styles.timerTableItemHeader}>
-                мин.
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                00
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                01
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                02
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                03
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                04
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                05
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                06
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                07
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                08
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                09
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                10
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                11
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                12
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                13
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                14
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                15
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                16
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                17
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                18
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                19
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                20
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                21
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                22
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                23
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                24
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                25
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                26
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                27
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                28
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                29
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                30
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                31
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                32
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                33
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                34
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                35
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                36
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                37
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                38
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                39
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                40
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                41
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                42
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                43
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                44
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                45
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                46
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                47
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                48
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                49
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                50
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                51
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                52
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                53
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                54
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                55
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                56
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                57
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                58
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                59
-              </Text>
-            </ScrollView>
-            <ScrollView
-              ref={(ref) => setStartedTimerInitialSecondsScroll(ref)}
-              style={styles.timerTableItem}
-              onScroll={(ref) => {
-                const event = ref.nativeEvent
-                const offset = event.contentOffset
-                const verticalOffset = offset.y
-                const correctScrollOffset = verticalOffset / 45
-                const repeatedSecondsTimeLabelsIndex = Number.parseInt(correctScrollOffset)
-                const secondsTime = repeatedSecondsTimeLabels[repeatedSecondsTimeLabelsIndex]
-                setStartedTimerSecondsTime(secondsTime)
-                console.log(`verticalOffset: ${verticalOffset}; secondsTime: ${secondsTime}`)
-              }}
-            >
-              <Text style={styles.timerTableItemHeader}>
-                сек.
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                00
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                01
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                02
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                03
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                04
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                05
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                06
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                07
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                08
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                09
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                10
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                11
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                12
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                13
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                14
-              </Text>-
-              <Text style={styles.timerTableItemLabel}>
-                15
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                16
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                17
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                18
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                19
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                20
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                21
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                22
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                23
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                24
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                25
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                26
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                27
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                28
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                29
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                30
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                31
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                32
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                33
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                34
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                35
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                36
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                37
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                38
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                39
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                40
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                41
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                42
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                43
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                44
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                45
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                46
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                47
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                48
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                49
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                50
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                51
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                52
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                53
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                54
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                55
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                56
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                57
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                58
-              </Text>
-              <Text style={styles.timerTableItemLabel}>
-                59
-              </Text>
-            </ScrollView>
-            <ScrollView>
-              
-            </ScrollView>
-            <ScrollView>
-              
-            </ScrollView>
-          </View>
-          <View style={styles.timerBtns}>
-            <ScrollView style={styles.customTimers} horizontal={true}>
+            <Text style={styles.stopwatchTitle}>
               {
-                customTimers.map((customTimer, customTimerIndex) => {
+                title
+              }
+            </Text>
+            <View style={getIntervalWrapStyle}>
+              <View style={styles.intervalsItem}>
+                <Text style={styles.intervalsItemLabel}>
+                  Круг
+                </Text>
+                <Text style={styles.intervalsItemLabel}>
+                  Время круга
+                </Text>
+                <Text style={styles.intervalsItemLabel}>
+                  Общее время
+                </Text>
+              </View>
+              {
+                intervals.map((interval, intervalIndex) => {
                   return (
-                    <TouchableOpacity
-                      onPress={() => {
-                        const isNeedClearTimers = !timersTogglers[customTimerIndex]
-                        if (isNeedClearTimers) {
-                          timersTogglers.fill(false)
-                        }
-                        timersTogglers[customTimerIndex] = !timersTogglers[customTimerIndex]
-                        let correctScrollOffset = Number.parseInt(startedTimerHoursTime)
-                        let verticalOffset = correctScrollOffset * 45
-                        startedTimerInitialHoursScroll.scrollTo({
-                          x: 0,
-                          y: verticalOffset
-                        })
-                        correctScrollOffset = Number.parseInt(startedTimerMinutesTime)
-                        verticalOffset = correctScrollOffset * 45
-                        startedTimerInitialMinutesScroll.scrollTo({
-                          x: 0,
-                          y: verticalOffset
-                        })
-                        correctScrollOffset = Number.parseInt(startedTimerSecondsTime)
-                        verticalOffset = correctScrollOffset * 45
-                        startedTimerInitialSecondsScroll.scrollTo({
-                          x: 0,
-                          y: verticalOffset
-                        })
-                        
-                      }}
-                      style={
-                        [
-                          styles.customTimer,
-                          timersTogglers[customTimerIndex] ? styles.activatedCustomTimer : styles.deactivatedCustomTimer
-                        ]
-                      }
-                      key={customTimerIndex}
-                    >
-                      <Text style={styles.customTimerTitle}>
+                    <View key={intervalIndex} style={styles.intervalsItem}>
+                      <Text style={styles.intervalsItemLabel}>
                         {
-                          customTimer.name.length >= 1 ?
-                            `${customTimer.name}\n${customTimer.hours}:${customTimer.minutes}:${customTimer.seconds}`
-                          :
-                          `${customTimer.hours}:${customTimer.minutes}:${customTimer.seconds}`
+                          interval.circle
                         }
                       </Text>
-                    </TouchableOpacity>
+                      <Text style={styles.intervalsItemLabel}>
+                        {
+                          interval.circleTime
+                        }
+                      </Text>
+                      <Text style={styles.intervalsItemLabel}>
+                        {
+                          interval.totalTime
+                        }
+                      </Text>
+                    </View>
                   )
                 })
               }
-            </ScrollView>
-            <View style={styles.timerBtn}>
-              <Button
-                title="Начать"
-                onPress={() => {
-                  let initialStartedTitle = ''
-                  initialStartedTitle = `${startedTimerHoursTime}:${startedTimerMinutesTime}:${startedTimerSecondsTime}`
-                  setCurrentTab('TimerStart')
-                  runStartedTimer()
-                  setStartTimerTitle(initialStartedTitle)
-                }}
-              />
             </View>
-          </View>
-          <Dialog
-            visible={isDialogVisible}
-            onDismiss={() => setIsDialogVisible(false)}>
-            <Dialog.Title>Username</Dialog.Title>
-            <Dialog.Content>
-              <TextInput
-                value={newCustomTimerTime}
-                onChangeText={text => setNewCustomTimerTime(text)}
-              />
-              <TextInput
-                value={newCustomTimerName}
-                onChangeText={text => setNewCustomTimerName(text)}
-              />
-            </Dialog.Content>
-            <Dialog.Actions>
-              <Button title="Добавить" onPress={() => {
-                console.log(`создаю Таймер: newCustomTimerName: ${newCustomTimerName}; newCustomTimerTime: ${newCustomTimerTime}`)
-                const timerName = newCustomTimerName
-                const possibleTime = newCustomTimerTime.split(':')
-                const isTime = possibleTime.length === 3
-                if (isTime) {
-                  let timerHours = '00'
-                  timerHours = possibleTime[0]
-                  let timerMinutes = '00'
-                  timerHours = possibleTime[1]
-                  let timerSeconds = '00'
-                  timerSeconds = possibleTime[2]
-                  let sqlStatement = `INSERT INTO \"timers\"(name, hours, minutes, seconds) VALUES (\"${timerName}\", \"${timerHours}\", \"${timerMinutes}\", \"${timerSeconds}\");`
-                  db.transaction(transaction => {
-                    transaction.executeSql(sqlStatement, [], (tx, receivedTimers) => {
-                      
-                    }, (tx) => {
-                      console.log('ошибка получения таймеров')
-                    })
-                  })
-                  setIsDialogVisible(false)
-                }
-              }}>Done</Button>
-            </Dialog.Actions>
-          </Dialog>
-        </View>
-        : currentTab == 'TimerStart' ?
-        <View>
-          <View style={styles.alarmsTabBtns}>
-            <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
-              console.log('создаю Таймер')
-            }}>
-              <Feather style={styles.alarmsTabBtn} name="plus" size={24} color="black" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
-              console.log('открываю контекстное меню Таймера')
-            }}>
-              <Feather style={styles.alarmsTabBtn} name="more-vertical" size={24} color="black" />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.startTimerLabelContainer}>
-            <View style={styles.startTimerLabelBlock}>
-              <Text style={styles.startTimerLabel}>
+            <View style={styles.stopwatchBtns}>
+              <View  style={styles.stopwatchBtn}>
+                <Button
+                  title="Интервал"
+                  style={styles.stopwatchIntervalBtn}
+                  color={'rgb(200, 200, 200)'}
+                  disabled={isIntervalBtnDisabled}
+                  onPress={() => {
+                    const circlesCount = intervals.length + 1
+                    let circleLabelContent = circlesCount.toString() 
+                    const isCirclesTop9 = circlesCount <= 9
+                    if (isCirclesTop9) {
+                      circleLabelContent = oneCharPrefix + circleLabelContent
+                    }
+                    
+                    let parsedCircleSeconds = circleSeconds.toString()
+                    const countSecondsChars = parsedCircleSeconds.length
+                    const isAddSecondsPrefix = countSecondsChars === 1
+                    if (isAddSecondsPrefix) {
+                      parsedCircleSeconds = oneCharPrefix + parsedCircleSeconds
+                    }
+                    let parsedCircleMinutes = circleMinutes.toString()
+                    const countMinutesChars = parsedCircleMinutes.length
+                    const isAddMinutesPrefix = countMinutesChars === 1
+                    if (isAddMinutesPrefix) {
+                      parsedCircleMinutes = oneCharPrefix + parsedCircleMinutes
+                    }
+                    let parsedCircleHours = circleHours.toString()
+                    const countHoursChars = parsedCircleHours.length
+                    const isAddHoursPrefix = countHoursChars == 1
+                    if (isAddHoursPrefix) {
+                      parsedCircleHours = oneCharPrefix + parsedCircleHours
+                    }
+                    
+                    const circlTimeLabel = parsedCircleHours + timePartsSeparator + parsedCircleMinutes + timePartsSeparator + parsedCircleSeconds
+                    const interval = {
+                      circle: circleLabelContent,
+                      circleTime: circlTimeLabel,
+                      totalTime: title
+                    }
+                    setIntervals([
+                      interval,
+                      ...intervals
+                    ])
+                    if (stopWatchIntervalTimer !== null) {
+                      clearInterval(stopWatchIntervalTimer)
+                      setStopWatchIntervalTimer(null)
+                      setCircleHours(0)
+                      setCircleMinutes(0)
+                      setCircleSeconds(0)  
+                    }
+                    let newCircleHours = 0
+                    let newCircleMinutes = 0
+                    let newCircleSeconds = 0
+                    setStopWatchIntervalTimer(
+                      setInterval(() => {
+                        
+                        newCircleSeconds++
+                        setCircleSeconds(newCircleSeconds)
+                        const isToggleSecond = circleSeconds === countSecondsInMinute
+                        if (isToggleSecond) {
+                          newCircleSeconds = initialSeconds
+                          setCircleSeconds(newCircleSeconds)
+                          newCircleMinutes++
+                          setCircleMinutes(newCircleMinutes)
+                          const isToggleHour = circleMinutes === countMinutesInHour
+                          if (isToggleHour) {
+                            newCircleMinutes = initialMinutes
+                            setCircleMinutes(newCircleMinutes)
+                            newCircleHours++
+                            setCircleHours(newCircleHours)
+                          }
+                        }
+                        
+                      }, millisecondsInSecond)
+                    )
+                  }}
+                />
+              </View>
+              <View  style={styles.stopwatchBtn}>
+                <Button onPress={() => {
+                  startStopWatchTimer()
+                }} color={startBtnBackgroundColor} title={startBtnContent} />
+              </View>
+            </View>
+          </ScrollView>
+        : currentTab == 'Таймер' ?
+          <View>
+            <View style={styles.alarmsTabBtns}>
+              <TouchableOpacity
+                style={styles.footerTabLabel}
+                onPress={() => {
+                  setIsDialogVisible(true)
+                }}
+              >
+                <Feather style={styles.alarmsTabBtn} name="plus" size={24} color="black" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
+                // открываю контекстное меню Таймера
+              }}>
+                <Feather style={styles.alarmsTabBtn} name="more-vertical" size={24} color="black" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.timerTable}>
+              <ScrollView
+                style={styles.timerTableItem}
+                ref={(ref) => {
+                  setStartedTimerInitialHoursScroll(ref)
+                }}
+                onScroll={(ref) => {
+                  const event = ref.nativeEvent
+                  const offset = event.contentOffset
+                  const verticalOffset = offset.y
+                  const correctScrollOffset = verticalOffset / 45
+                  const repeatedHoursTimeLabelsIndex = Number.parseInt(correctScrollOffset)
+                  const hoursTime = repeatedHoursTimeLabels[repeatedHoursTimeLabelsIndex]
+                  setStartedTimerHoursTime(hoursTime)
+                }}
+              >
+                <Text style={styles.timerTableItemHeader}>
+                  ч.
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  00
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  01
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  02
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  03
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  04
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  05
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  06
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  07
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  08
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  09
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  10
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  11
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  12
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  13
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  14
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  15
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  16
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  17
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  18
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  19
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  20
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  21
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  22
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  23
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  24
+                </Text>
+              </ScrollView>
+              <ScrollView
+                style={styles.timerTableItem}
+                ref={(ref) => {
+                  setStartedTimerInitialMinutesScroll(ref)
+                }}
+                onScroll={(ref) => {
+                  const event = ref.nativeEvent
+                  const offset = event.contentOffset
+                  const verticalOffset = offset.y
+                  const correctScrollOffset = verticalOffset / 45
+                  const repeatedMinutesTimeLabelsIndex = Number.parseInt(correctScrollOffset)
+                  const minutesTime = repeatedMinutesTimeLabels[repeatedMinutesTimeLabelsIndex]
+                  setStartedTimerMinutesTime(minutesTime)
+                }}
+              >
+                <Text style={styles.timerTableItemHeader}>
+                  мин.
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  00
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  01
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  02
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  03
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  04
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  05
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  06
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  07
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  08
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  09
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  10
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  11
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  12
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  13
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  14
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  15
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  16
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  17
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  18
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  19
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  20
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  21
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  22
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  23
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  24
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  25
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  26
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  27
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  28
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  29
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  30
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  31
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  32
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  33
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  34
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  35
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  36
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  37
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  38
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  39
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  40
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  41
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  42
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  43
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  44
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  45
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  46
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  47
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  48
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  49
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  50
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  51
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  52
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  53
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  54
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  55
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  56
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  57
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  58
+                </Text>
+                <Text style={styles.timerTableItemLabel}>
+                  59
+                </Text>
+              </ScrollView>
+              <ScrollView>
+                
+              </ScrollView>
+              <ScrollView>
+                
+              </ScrollView>
+            </View>
+            <View style={styles.timerBtns}>
+              <ScrollView style={styles.customTimers} horizontal={true}>
                 {
-                  startTimerTitle
+                  customTimers.map((customTimer, customTimerIndex) => {
+                    return (
+                      <TouchableOpacity
+                        onPress={() => {
+                          const isNeedClearTimers = !timersTogglers[customTimerIndex]
+                          if (isNeedClearTimers) {
+                            timersTogglers.fill(false)
+                          }
+                          timersTogglers[customTimerIndex] = !timersTogglers[customTimerIndex]
+                          let correctScrollOffset = Number.parseInt(startedTimerHoursTime)
+                          let verticalOffset = correctScrollOffset * 45
+                          startedTimerInitialHoursScroll.scrollTo({
+                            x: 0,
+                            y: verticalOffset
+                          })
+                          correctScrollOffset = Number.parseInt(startedTimerMinutesTime)
+                          verticalOffset = correctScrollOffset * 45
+                          startedTimerInitialMinutesScroll.scrollTo({
+                            x: 0,
+                            y: verticalOffset
+                          })
+                          correctScrollOffset = Number.parseInt(startedTimerSecondsTime)
+                          verticalOffset = correctScrollOffset * 45
+                          startedTimerInitialSecondsScroll.scrollTo({
+                            x: 0,
+                            y: verticalOffset
+                          })
+                          
+                        }}
+                        style={
+                          [
+                            styles.customTimer,
+                            timersTogglers[customTimerIndex] ? styles.activatedCustomTimer : styles.deactivatedCustomTimer
+                          ]
+                        }
+                        key={customTimerIndex}
+                      >
+                        <Text style={styles.customTimerTitle}>
+                          {
+                            customTimer.name.length >= 1 ?
+                              `${customTimer.name}\n${customTimer.hours}:${customTimer.minutes}:${customTimer.seconds}`
+                            :
+                            `${customTimer.hours}:${customTimer.minutes}:${customTimer.seconds}`
+                          }
+                        </Text>
+                      </TouchableOpacity>
+                    )
+                  })
                 }
-              </Text>
-            </View>
-          </View>
-          <View style={styles.startTimerBtns}>
-            <View  style={styles.startTimerBtn}>
-              <Button
-                title="Отмена"
-                onPress={() => {
-                  setCurrentTab('Таймер')
-                  resetStartedTimer()
-                  setStartedTimerPauseBtnСontent('Начать')
-                }}  
-              />
-            </View>
-            <View  style={styles.startTimerBtn}>
-              <Button
-                color={startedTimerPauseBtnColor}
-                title={startedTimerPauseBtnСontent}
-                onPress={() => {
-                  if (isStartedTimerPause) {
-                    
-                    setStartedTimerPauseBtnСontent(pauseBtnContent)
-                    setStartedTimerPauseBtnColor(pauseBtnColor)
-
+              </ScrollView>
+              <View style={styles.timerBtn}>
+                <Button
+                  title="Начать"
+                  onPress={() => {
+                    let initialStartedTitle = ''
+                    initialStartedTitle = `${startedTimerHoursTime}:${startedTimerMinutesTime}:${startedTimerSecondsTime}`
+                    setCurrentTab('TimerStart')
                     runStartedTimer()
-
-                  } else {
-
-                    resetStartedTimer()
-                    
+                    setStartTimerTitle(initialStartedTitle)
+                  }}
+                />
+              </View>
+            </View>
+            <Dialog
+              visible={isDialogVisible}
+              onDismiss={() => setIsDialogVisible(false)}>
+              <Dialog.Title>{''}</Dialog.Title>
+              <Dialog.Content>
+                <TextInput
+                  value={newCustomTimerTime}
+                  onChangeText={text => setNewCustomTimerTime(text)}
+                />
+                <TextInput
+                  value={newCustomTimerName}
+                  onChangeText={text => setNewCustomTimerName(text)}
+                />
+              </Dialog.Content>
+              <Dialog.Actions>
+                <Button title="Добавить" onPress={() => {
+                  const timerName = newCustomTimerName
+                  const possibleTime = newCustomTimerTime.split(':')
+                  const isTime = possibleTime.length === 3
+                  if (isTime) {
+                    let timerHours = '00'
+                    timerHours = possibleTime[0]
+                    let timerMinutes = '00'
+                    timerHours = possibleTime[1]
+                    let timerSeconds = '00'
+                    timerSeconds = possibleTime[2]
+                    let sqlStatement = `INSERT INTO \"timers\"(name, hours, minutes, seconds) VALUES (\"${timerName}\", \"${timerHours}\", \"${timerMinutes}\", \"${timerSeconds}\");`
+                    db.transaction(transaction => {
+                      transaction.executeSql(sqlStatement, [], (tx, receivedTimers) => {
+                        
+                      }, (tx) => {
+                        // ошибка получения таймеров
+                      })
+                    })
+                    setIsDialogVisible(false)
                   }
-                  setIsStartedTimerPause(value => !value)
-                }}
-              />
+                }}>Done</Button>
+              </Dialog.Actions>
+            </Dialog>
+          </View>
+        : currentTab == 'TimerStart' ?
+          <View>
+            <View style={styles.alarmsTabBtns}>
+              <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
+                // создаю Таймер
+              }}>
+                <Feather style={styles.alarmsTabBtn} name="plus" size={24} color="black" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
+                // открываю контекстное меню Таймера
+              }}>
+                <Feather style={styles.alarmsTabBtn} name="more-vertical" size={24} color="black" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.startTimerLabelContainer}>
+              <View style={styles.startTimerLabelBlock}>
+                <Text style={styles.startTimerLabel}>
+                  {
+                    startTimerTitle
+                  }
+                </Text>
+              </View>
+            </View>
+            <View style={styles.startTimerBtns}>
+              <View  style={styles.startTimerBtn}>
+                <Button
+                  title="Отмена"
+                  onPress={() => {
+                    setCurrentTab('Таймер')
+                    resetStartedTimer()
+                    setStartedTimerPauseBtnСontent('Начать')
+                  }}  
+                />
+              </View>
+              <View  style={styles.startTimerBtn}>
+                <Button
+                  color={startedTimerPauseBtnColor}
+                  title={startedTimerPauseBtnСontent}
+                  onPress={() => {
+                    if (isStartedTimerPause) {
+                      
+                      setStartedTimerPauseBtnСontent(pauseBtnContent)
+                      setStartedTimerPauseBtnColor(pauseBtnColor)
+
+                      runStartedTimer()
+
+                    } else {
+
+                      resetStartedTimer()
+                      
+                    }
+                    setIsStartedTimerPause(value => !value)
+                  }}
+                />
+              </View>
             </View>
           </View>
-        </View>
         :
-        <View />
+          <View />
       }
       {
         !isSelection ?
@@ -2156,7 +1972,7 @@ export function MainActivity({ navigation }) {
             <TouchableOpacity
               style={styles.footerTabLabel}
               onPress={() => {
-                console.log('Меняю вкладку на Будильник')
+                // Меняю вкладку на Будильник
                 setCurrentTab('Будильник')
               }}
             >
@@ -2173,7 +1989,7 @@ export function MainActivity({ navigation }) {
             <TouchableOpacity
               style={styles.footerTabLabel}
               onPress={() => {
-                console.log('Меняю вкладку на Мировое время')
+                // Меняю вкладку на Мировое время
                 setCurrentTab('Мировое время')
               }}
             >
@@ -2188,7 +2004,7 @@ export function MainActivity({ navigation }) {
             <TouchableOpacity
               style={styles.footerTabLabel}
               onPress={() => {
-                console.log('Меняю вкладку на Секундомер')
+                // Меняю вкладку на Секундомер
                 setCurrentTab('Секундомер')
               }}
             >
@@ -2203,7 +2019,7 @@ export function MainActivity({ navigation }) {
               </Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
-              console.log('Меняю вкладку на Таймер')
+              // Меняю вкладку на Таймер
               setCurrentTab('Таймер')
             }}>
               <Text
@@ -2303,6 +2119,7 @@ export function MainActivity({ navigation }) {
       }
     </View>
   )
+  
 }
 
 export function AddAlarmActivity({ navigation }) {
@@ -2806,18 +2623,20 @@ export function AddAlarmActivity({ navigation }) {
                 setAlarmHoursTime(hoursTime)
               }}
               ref={(ref) => {
-                ref.scrollTo({
-                  x: 0,
-                  y: 2500,
-                  animated: false
-                })
+                if (ref != null) {
+                  ref.scrollTo({
+                    x: 0,
+                    y: 2500,
+                    animated: false
+                  })
+                }
               }}
             >
               {
                 repeatedHoursTimeLabels.map((timeLabel, timeLabelIndex) => {
                   return (
                     <TouchableOpacity key={timeLabelIndex} onPress={() => {
-                      console.log('выбираю часы для Будильника')
+                      // выбираю часы для Будильника
                       setAlarmHoursTime(timeLabel)
                     }}>
                       <Text style={
@@ -2839,11 +2658,13 @@ export function AddAlarmActivity({ navigation }) {
           <View style={styles.addAlarmTimeInputItem}>
             <ScrollView 
               ref={(ref) => {
-                ref.scrollTo({
-                  x: 0,
-                  y: 7500,
-                  animated: false
-                })
+                if (ref != null) {
+                  ref.scrollTo({
+                    x: 0,
+                    y: 7500,
+                    animated: false
+                  })
+                }
               }}
               style={styles.addAlarmTimeInputItemScroll}
               onScroll={(scroll) => {
@@ -2860,7 +2681,7 @@ export function AddAlarmActivity({ navigation }) {
                 repeatedMinutesTimeLabels.map((timeLabel, timeLabelIndex) => {
                   return (
                     <TouchableOpacity key={timeLabelIndex} onPress={() => {
-                      console.log('выбираю минуты для Будильника')
+                      // выбираю минуты для Будильника
                       setAlarmMinutesTime(timeLabel)
                     }}>
                       <Text style={
@@ -2897,7 +2718,7 @@ export function AddAlarmActivity({ navigation }) {
         </View>
         <View style={styles.addAlarmWeek}>
           <TouchableOpacity onPress={() => {
-            console.log('выбираю дату Будильника на понедельник на этой неделе')
+            // выбираю дату Будильника на понедельник на этой неделе
             setAlarm
             setAlarmDate(getNextDay('monday'))
           }}>
@@ -2906,7 +2727,7 @@ export function AddAlarmActivity({ navigation }) {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => {
-            console.log('выбираю дату Будильника на вторник на этой неделе')
+            // выбираю дату Будильника на вторник на этой неделе
             setAlarmDate(getNextDay('tuesday'))
           }}>
             <Text style={styles.addAlarmWeekDay}>
@@ -2914,7 +2735,7 @@ export function AddAlarmActivity({ navigation }) {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => {
-            console.log('выбираю дату Будильника на среду на этой неделе')
+            // выбираю дату Будильника на среду на этой неделе
             setAlarmDate(getNextDay('wednesday'))
           }}>
             <Text style={styles.addAlarmWeekDay}>
@@ -2922,7 +2743,7 @@ export function AddAlarmActivity({ navigation }) {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => {
-            console.log('выбираю дату Будильника на четверг на этой неделе')
+            // выбираю дату Будильника на четверг на этой неделе
             setAlarmDate(getNextDay('thursday'))
           }}>
             <Text style={styles.addAlarmWeekDay}>
@@ -2930,7 +2751,7 @@ export function AddAlarmActivity({ navigation }) {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => {
-            console.log('выбираю дату Будильника на пятницу на этой неделе')
+            // выбираю дату Будильника на пятницу на этой неделе
             setAlarmDate(getNextDay('friday'))
           }}>
             <Text style={styles.addAlarmWeekDay}>
@@ -2938,7 +2759,7 @@ export function AddAlarmActivity({ navigation }) {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => {
-            console.log('выбираю дату Будильника на субботу на этой неделе')
+            // выбираю дату Будильника на субботу на этой неделе
             setAlarmDate(getNextDay('saturday'))
           }}>
             <Text style={styles.addAlarmWeekDay}>
@@ -2946,7 +2767,7 @@ export function AddAlarmActivity({ navigation }) {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => {
-            console.log('выбираю дату Будильника на воскресенье на этой неделе')
+            // выбираю дату Будильника на воскресенье на этой неделе
             setAlarmDate(getNextDay('sunday'))
           }}>
             <Text style={styles.addAlarmWeekDay, styles.addAlarmWeekHoliday}>
@@ -2958,7 +2779,7 @@ export function AddAlarmActivity({ navigation }) {
         <View style={styles.addAlarmOptions}>
           <View style={styles.addAlarmOption}>
             <TouchableOpacity onPress={() => {
-              console.log('выбираю дату Будильника на воскресенье на этой неделе')
+              // выбираю дату Будильника на воскресенье на этой неделе
             }}>
               <View style={styles.addAlarmOptionAside}>
                 <Text style={styles.addAlarmOptionAsideHeaderLabel}>
@@ -2973,7 +2794,7 @@ export function AddAlarmActivity({ navigation }) {
           </View>
           <View style={[styles.addAlarmOption, styles.addAlarmVibrationOption]}>
             <TouchableOpacity onPress={() => {
-              console.log('выбираю дату Будильника на воскресенье на этой неделе')
+              // выбираю дату Будильника на воскресенье на этой неделе
             }}>
               <View style={styles.addAlarmOptionAside}>
                 <Text style={styles.addAlarmOptionAsideHeaderLabel}>
@@ -2988,7 +2809,7 @@ export function AddAlarmActivity({ navigation }) {
           </View>
           <View style={styles.addAlarmOption}>
             <TouchableOpacity onPress={() => {
-              console.log('выбираю дату Будильника на воскресенье на этой неделе')
+              // выбираю дату Будильника на воскресенье на этой неделе
             }}>
               <View style={styles.addAlarmOptionAside}>
                 <Text style={styles.addAlarmOptionAsideHeaderLabel}>
@@ -3004,7 +2825,7 @@ export function AddAlarmActivity({ navigation }) {
         </View>
         <View style={styles.addAlarmFooter}>
           <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
-            console.log('отменяю создание Будильник')
+            // отменяю создание Будильник
             navigation.navigate('MainActivity')
           }}>
             <Text style={styles.addAlarmFooterLabel}>
@@ -3012,14 +2833,14 @@ export function AddAlarmActivity({ navigation }) {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
-            console.log('создаю Будильник')
+            // создаю Будильник
             const alarmTime = `${alarmHoursTime}:${alarmMinutesTime}` 
             let sqlStatement = `INSERT INTO \"alarms\"(time, date, isEnabled) VALUES (\"${alarmTime}\",\"${alarmDate}\", true);`
             db.transaction(transaction => {
               transaction.executeSql(sqlStatement, [], (tx, receivedContacts) => {
                 navigation.navigate('MainActivity')
               }, (tx) => {
-                console.log("ошибка получения аватарки")
+                // ошибка получения аватарки
               })
             })
           }}>
@@ -3058,7 +2879,6 @@ export function AddWorldTimeActivity({ route, navigation }) {
     const { action, id } = route.params
     isChangeCity = action === 'change'
     setChangedCityId(id)
-    console.log(`changedCityId: ${changedCityId}`)
     if (isChangeCity) {
       setAddWorldTimeBtnTitle('Изменить')
       setAddWorldTimeTitle('Изменить город')
@@ -3085,15 +2905,13 @@ export function AddWorldTimeActivity({ route, navigation }) {
         <Button
           title={addWorldTimeBtnTitle}
           onPress={() => {
-            console.log(`isChangeCity ${isChangeCity} на имя ${cityName}`)
             if (addWorldTimeBtnTitle === 'Изменить') {
-              console.log(`обновляю мировое время с _id = ${changedCityId} на имя ${cityName}`)
               let sqlStatement = `UPDATE cities SET name=\"${cityName}\" WHERE _id=${changedCityId};`
               db.transaction(transaction => {
                 transaction.executeSql(sqlStatement, [], (tx, receivedCities) => {
                   navigation.navigate('MainActivity')
                 }, (tx) => {
-                  console.log('ошибка получения городов')
+                  // ошибка получения городов
                 })
               })
             } else {
@@ -3102,7 +2920,7 @@ export function AddWorldTimeActivity({ route, navigation }) {
                 transaction.executeSql(sqlStatement, [], (tx, receivedCities) => {
                   
                 }, (tx) => {
-                  console.log('ошибка получения городов')
+                  // ошибка получения городов
                 })
               })
             }
@@ -3126,7 +2944,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   footerTabLabel: {
-    marginHorizontal: 15
+    marginHorizontal: 5
   },
   activeFooterTabLabel: {
     fontWeight: '700',
@@ -3329,7 +3147,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden'
   },
   intervals: {
-    
   },
   intervalsItem: {
     display: 'flex',
