@@ -8,12 +8,10 @@ import { TextInput } from 'react-native-gesture-handler'
 import { Entypo } from '@expo/vector-icons'
 import { AntDesign, Ionicons, MaterialIcons } from '@expo/vector-icons'
 import {
-  Paragraph,
-  Dialog,
-  Portal,
-  Provider
+  Dialog
 } from 'react-native-paper'
 import DateTimePicker from '@react-native-community/datetimepicker'
+import * as MaterialMenu from 'react-native-material-menu'
 
 var db = null
 
@@ -1004,6 +1002,14 @@ export function MainActivity({ navigation }) {
 
   const [isSelection, setIsSelection] = useState(false)
   
+  const [isAlarmMainActivityContextMenuVisible, setIsAlarmMainActivityContextMenuVisible] = useState(false)
+
+  const [isCityMainActivityContextMenuVisible, setIsCityMainActivityContextMenuVisible] = useState(false)
+
+  const [isStopWatchMainActivityContextMenuVisible, setIsStopWatchMainActivityContextMenuVisible] = useState(false)
+
+  const [isTimerMainActivityContextMenuVisible, setIsTimerMainActivityContextMenuVisible] = useState(false)
+
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', function () {
       const isAlarmsActivity = currentTab == 'Будильник'
@@ -1171,9 +1177,20 @@ export function MainActivity({ navigation }) {
               </TouchableOpacity>
               <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
                 // открываю контекстное меню Будильников
+                setIsAlarmMainActivityContextMenuVisible(true)
               }}>
                 <Feather style={styles.alarmsTabBtn} name="more-vertical" size={24} color="black" />
               </TouchableOpacity>
+              <MaterialMenu.Menu
+                onRequestClose={() => setIsAlarmMainActivityContextMenuVisible(false)}
+                visible={isAlarmMainActivityContextMenuVisible}
+              >
+                <MaterialMenu.MenuItem
+                  onPress={() => {
+                    setIsAlarmMainActivityContextMenuVisible(false)
+                  }}
+                ></MaterialMenu.MenuItem>
+              </MaterialMenu.Menu>
             </View>
             <ScrollView style={styles.alarms}>
               {
@@ -1267,10 +1284,21 @@ export function MainActivity({ navigation }) {
                 <Feather style={styles.alarmsTabBtn} name="plus" size={24} color="black" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
-                // открываю контекстное меню Будильников
+                // открываю контекстное меню мирового времени
+                setIsCityMainActivityContextMenuVisible(true)
               }}>
                 <Feather style={styles.alarmsTabBtn} name="more-vertical" size={24} color="black" />
               </TouchableOpacity>
+              <MaterialMenu.Menu
+                onRequestClose={() => setIsCityMainActivityContextMenuVisible(false)}
+                visible={isCityMainActivityContextMenuVisible}
+              >
+                <MaterialMenu.MenuItem
+                  onPress={() => {
+                    setCityIsMainActivityContextMenuVisible(false)
+                  }}
+                ></MaterialMenu.MenuItem>
+              </MaterialMenu.Menu>
             </View>
             <ScrollView style={styles.alarms}>
               {
@@ -1350,10 +1378,21 @@ export function MainActivity({ navigation }) {
           <ScrollView style={{maxHeight: '90%'}}>
             <View style={styles.alarmsTabBtns}>
               <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
-                // открываю контекстное меню Будильников
+                // открываю контекстное меню секундомера
+                setIsStopWatchMainActivityContextMenuVisible(true)
               }}>
                 <Feather style={styles.alarmsTabBtn} name="more-vertical" size={24} color="black" />
               </TouchableOpacity>
+              <MaterialMenu.Menu
+                onRequestClose={() => setIsStopWatchMainActivityContextMenuVisible(false)}
+                visible={isStopWatchMainActivityContextMenuVisible}
+              >
+                <MaterialMenu.MenuItem
+                  onPress={() => {
+                    setIsStopWatchMainActivityContextMenuVisible(false)
+                  }}
+                ></MaterialMenu.MenuItem>
+              </MaterialMenu.Menu>
             </View>
             <Text style={styles.stopwatchTitle}>
               {
@@ -1495,9 +1534,20 @@ export function MainActivity({ navigation }) {
               </TouchableOpacity>
               <TouchableOpacity style={styles.footerTabLabel} onPress={() => {
                 // открываю контекстное меню Таймера
+                setIsTimerMainActivityContextMenuVisible(true)
               }}>
                 <Feather style={styles.alarmsTabBtn} name="more-vertical" size={24} color="black" />
               </TouchableOpacity>
+              <MaterialMenu.Menu
+                onRequestClose={() => setIsTimerMainActivityContextMenuVisible(false)}
+                visible={isTimerMainActivityContextMenuVisible}
+              >
+                <MaterialMenu.MenuItem
+                  onPress={() => {
+                    setIsTimerMainActivityContextMenuVisible(false)
+                  }}
+                ></MaterialMenu.MenuItem>
+              </MaterialMenu.Menu>
             </View>
             <View style={styles.timerTable}>
               <ScrollView
